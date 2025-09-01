@@ -9,8 +9,6 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window = UIWindow(windowScene: windowScene)
         window?.rootViewController = ViewController()
         window?.makeKeyAndVisible()
-        
-        print(UnsplashEnvironment.baseURL, UnsplashEnvironment.accessKey)
     }
 }
 

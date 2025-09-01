@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23788.4" systemVersion="24G84" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
+    <entity name="LikedPhotoEntity" representedClassName="LikedPhotoEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="url" attributeType="URI"/>
+    </entity>
+    <entity name="SearchQueryEntity" representedClassName="SearchQueryEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="color" attributeType="String"/>
+        <attribute name="orderedBy" attributeType="String"/>
+        <attribute name="orientation" attributeType="String"/>
+        <attribute name="query" attributeType="String"/>
+    </entity>
+</model>
