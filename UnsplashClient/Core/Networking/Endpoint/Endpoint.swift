@@ -15,6 +15,3 @@ typealias Headers = [String: String]
 protocol ResponseType: Decodable { }
 
 extension Array: ResponseType where Element: ResponseType { }
-
-
-

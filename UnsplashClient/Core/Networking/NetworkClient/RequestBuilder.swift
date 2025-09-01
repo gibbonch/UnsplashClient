@@ -37,7 +37,7 @@ final class RequestBuilder: RequestBuilderProtocol {
         }
         
         components.path = endpoint.path
-        components.queryItems = endpoint.params.map { (name, value) in
+        components.queryItems = endpoint.params.map { name, value in
             URLQueryItem(name: name, value: value.description)
         }
         

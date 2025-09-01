@@ -55,50 +55,32 @@ final class NetworkClient {
         }
         
         let task = session.dataTask(with: request) { [weak self] data, response, error in
-            self?.handleResponse(
-                of: T.Response.self,
+            if let error {
+                completion(.failure(.networkError(error)))
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                completion(.failure(.invalidResponse))
+                return
+            }
+            
+            self?.middlewareChain.processResponse(httpResponse, data: data, for: request)
+            
+            guard 200...299 ~= httpResponse.statusCode else {
+                completion(.failure(.httpError(httpResponse.statusCode)))
+                return
+            }
+            
+            self?.responseProcessor.processResponse(
                 data: data,
-                response: response,
-                error: error,
-                request: request,
+                responseType: T.Response.self,
                 completion: completion
             )
         }
         
         task.resume()
         return task
-    }
-    
-    private func handleResponse<T: ResponseType>(
-        of type: T.Type,
-        data: Data?,
-        response: URLResponse?,
-        error: Error?,
-        request: URLRequest,
-        completion: @escaping (Result<T, NetworkError>) -> Void
-    ) {
-        if let error  {
-            completion(.failure(.networkError(error)))
-            return
-        }
-        
-        guard let httpResponse = response as? HTTPURLResponse else {
-            completion(.failure(.invalidResponse))
-            return
-        }
-        
-        middlewareChain.processResponse(httpResponse, data: data, for: request)
-        
-        guard 200...299 ~= httpResponse.statusCode else {
-            completion(.failure(.httpError(httpResponse.statusCode)))
-            return
-        }
-        
-        responseProcessor.processResponse(
-            data: data,
-            responseType: T.self,
-            completion: completion
-        )
     }
 }
 
