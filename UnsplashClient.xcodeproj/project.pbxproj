@@ -204,6 +204,8 @@
 		};
 		189513082E66021000152ABB /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = 189512F42E66020F00152ABB /* UnsplashClient */;
+			baseConfigurationReferenceRelativePath = Core/Networking/Unsplash/Unsplash.xcconfig;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -268,6 +270,8 @@
 		};
 		189513092E66021000152ABB /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = 189512F42E66020F00152ABB /* UnsplashClient */;
+			baseConfigurationReferenceRelativePath = Core/Networking/Unsplash/Unsplash.xcconfig;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
