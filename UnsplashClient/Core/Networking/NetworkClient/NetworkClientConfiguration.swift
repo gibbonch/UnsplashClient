@@ -19,6 +19,5 @@ struct NetworkClientConfiguration {
         self.cachePolicy = cachePolicy
         self.timeoutInterval = timeoutInterval
         self.decoder = decoder
-        self.decoder.dateDecodingStrategy = .iso8601
     }
 }

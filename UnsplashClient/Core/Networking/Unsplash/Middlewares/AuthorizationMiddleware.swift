@@ -1,10 +1,10 @@
 import Foundation
 
-final class AuthorizationMiddleware: RequestMiddleware {
+struct AuthorizationMiddleware: RequestMiddleware {
     
     func process(request: URLRequest) -> URLRequest {
         var modifiedRequest = request
-        modifiedRequest.setValue("", forHTTPHeaderField: "Authorization")
+        modifiedRequest.setValue("Client-ID \(UnsplashEnvironment.accessKey)", forHTTPHeaderField: "Authorization")
         return modifiedRequest
     }
 }

@@ -39,7 +39,7 @@ final class MiddlewareChain: MiddlewareChainProtocol {
 
 extension MiddlewareChain {
     
-    static func with(requestMiddlewares: [RequestMiddleware], responseMiddlewares: [ResponseMiddleware]) -> MiddlewareChain {
+    static func with(requestMiddlewares: [RequestMiddleware] = [], responseMiddlewares: [ResponseMiddleware] = []) -> MiddlewareChain {
         let chain = MiddlewareChain()
         requestMiddlewares.forEach { chain.addRequestMiddleware($0) }
         responseMiddlewares.forEach { chain.addResponseMiddleware($0) }
