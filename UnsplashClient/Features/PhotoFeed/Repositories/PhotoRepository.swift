@@ -1,9 +1,9 @@
 import Foundation
 
 protocol PhotoRepositoryProtocol {
-    func fetchPhotos(page: Int, perPage: Int, completion: @escaping (Result<[Photo], NetworkError>) -> Void)
-    func fetchPhotos(query: SearchQuery, page: Int, perPage: Int, completion: @escaping (Result<[Photo], NetworkError>) -> Void)
-    func fetchPhoto(id: String, completion: @escaping (Result<Photo, NetworkError>) -> Void)
+    func fetchPhotos(page: Int, perPage: Int, completion: @escaping (Result<[Photo], Error>) -> Void)
+    func fetchPhotos(query: SearchQuery, page: Int, perPage: Int, completion: @escaping (Result<[Photo], Error>) -> Void)
+    func fetchPhoto(id: String, completion: @escaping (Result<Photo, Error>) -> Void)
 }
 
 final class PhotoRepository: PhotoRepositoryProtocol {
@@ -14,7 +14,7 @@ final class PhotoRepository: PhotoRepositoryProtocol {
         self.client = client
     }
     
-    func fetchPhotos(page: Int, perPage: Int, completion: @escaping (Result<[Photo], NetworkError>) -> Void) {
+    func fetchPhotos(page: Int, perPage: Int, completion: @escaping (Result<[Photo], Error>) -> Void) {
         let endpoint = GetPhotosEndpoint(page: page, perPage: perPage)
         client.request(endpoint: endpoint) { result in
             switch result {
@@ -27,9 +27,9 @@ final class PhotoRepository: PhotoRepositoryProtocol {
         }
     }
     
-    func fetchPhotos(query: SearchQuery, page: Int, perPage: Int, completion: @escaping (Result<[Photo], NetworkError>) -> Void) { }
+    func fetchPhotos(query: SearchQuery, page: Int, perPage: Int, completion: @escaping (Result<[Photo], Error>) -> Void) { }
     
-    func fetchPhoto(id: String, completion: @escaping (Result<Photo, NetworkError>) -> Void) {
+    func fetchPhoto(id: String, completion: @escaping (Result<Photo, Error>) -> Void) {
         let endpoint = GetPhotoEndpoint(id: id)
         client.request(endpoint: endpoint) { result in
             switch result {
@@ -37,7 +37,7 @@ final class PhotoRepository: PhotoRepositoryProtocol {
                 if let photo = Photo(dto: photoDTO) {
                     completion(.success(photo))
                 } else {
-                    completion(.failure(.invalidData))
+                    completion(.failure(NetworkError.invalidData))
                 }
                 
             case .failure(let error):
