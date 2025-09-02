@@ -5,7 +5,7 @@ enum NetworkError: Error, LocalizedError {
     case networkError(Error)
     case invalidResponse
     case httpError(Int)
-    case noData
+    case invalidData
     case decodingError(Error)
     case timeout
     case cancelled
@@ -21,8 +21,8 @@ enum NetworkError: Error, LocalizedError {
             return "Invalid response received from server"
         case .httpError(let statusCode):
             return "HTTP error \(statusCode)"
-        case .noData:
-            return "No data received from server"
+        case .invalidData:
+            return "Invalid data received from server"
         case .decodingError(let error):
             return "Failed to decode response: \(error.localizedDescription)"
         case .timeout:

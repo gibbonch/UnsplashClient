@@ -21,7 +21,7 @@ struct Photo {
     let resolution: Resolution
     let color: Hex
     let blurHash: Hash
-    let description: String
+    let description: String?
 }
 
 typealias Hex = String

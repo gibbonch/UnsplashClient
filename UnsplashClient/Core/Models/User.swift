@@ -11,6 +11,6 @@ struct User {
     let id: String
     let nickname: String
     let firstName: String
-    let secondName: String
+    let lastName: String?
     let profileImage: ProfileImage
 }

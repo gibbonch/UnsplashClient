@@ -138,7 +138,7 @@ final class ResponseProcessor {
     ) {
         guard let data = data else {
             DispatchQueue.main.async {
-                completion(.failure(.noData))
+                completion(.failure(.invalidData))
             }
             return
         }
