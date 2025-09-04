@@ -1,8 +1,22 @@
-//
-//  PhotoFeedViewController.swift
-//  UnsplashClient
-//
-//  Created by Александр Торопов on 02.09.2025.
-//
+import UIKit
 
-import Foundation
+final class PhotoFeedViewController: UIViewController {
+    
+    private lazy var feedView = {
+        let view = UIView()
+        view.backgroundColor = .green
+        return view
+    }()
+    
+    override func loadView() {
+        view = feedView
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+    }
+    
+    deinit {
+        print("deinit")
+    }
+}

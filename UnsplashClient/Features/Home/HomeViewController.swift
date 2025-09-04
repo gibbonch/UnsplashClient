@@ -1,10 +1,25 @@
 import UIKit
 
+protocol HomeNavigationResponder: AnyObject {
+    func homeViewControllerDidStartSearch(_ vc: HomeViewController)
+    func homeViewControllerDidEndSearch(_ vc: HomeViewController)
+}
+
 final class HomeViewController: UIViewController {
+    
+    //    private let viewModel: HomeViewModel
+    weak var delegate: HomeNavigationResponder?
+    
+    private lazy var searchController: UISearchController = {
+        let searchController = UISearchController()
+        searchController.searchBar.delegate = self
+        searchController.searchBar.placeholder = "Search photos"
+        searchController.hidesNavigationBarDuringPresentation = false
+        return searchController
+    }()
     
     init() {
         super.init(nibName: nil, bundle: nil)
-        ThemeManager.shared.register(self)
     }
     
     @available(*, unavailable)
@@ -18,10 +33,44 @@ final class HomeViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        title = "Unsplash"
+        ThemeManager.shared.register(self)
+        setupNavigationBar()
+    }
+    
+    private func setupNavigationBar() {
+        navigationItem.title = "Unsplash"
+        navigationItem.searchController = searchController
     }
 }
+
+// MARK: - UISearchBarDelegate
+
+extension HomeViewController: UISearchBarDelegate {
+    
+    func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
+        delegate?.homeViewControllerDidStartSearch(self)
+        print("startEditing")
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchText.isEmpty {
+            print("cleared")
+        } else {
+            print(searchText)
+        }
+    }
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        delegate?.homeViewControllerDidEndSearch(self)
+        print("canceled")
+    }
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        print("search")
+    }
+}
+
+// MARK: - Themeable
 
 extension HomeViewController: Themeable {
     

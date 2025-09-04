@@ -19,6 +19,7 @@ final class AppCoordinator: CoordinatorProtocol {
     
     private func showMainFlow() {
         let homeNavigationController = ThemedNavigationController()
+        homeNavigationController.tabBarItem = UITabBarItem(title: nil, image: .homeAsset, selectedImage: nil)
         let homeDIContainer = DIContainer()
         let homeCoordinator = HomeCoordinator(
             navigationController: homeNavigationController,
@@ -27,6 +28,7 @@ final class AppCoordinator: CoordinatorProtocol {
         childCoordinators.append(homeCoordinator)
         
         let favoritesNavigationController = ThemedNavigationController()
+        favoritesNavigationController.tabBarItem = UITabBarItem(title: nil, image: .heartAsset, selectedImage: nil)
         let favoritesDIContainer = DIContainer()
         let favoritesCoordinator = FavoritesCoordinator(
             navigationController: favoritesNavigationController,

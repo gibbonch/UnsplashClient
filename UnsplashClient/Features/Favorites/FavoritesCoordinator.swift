@@ -16,7 +16,6 @@ final class FavoritesCoordinator: CoordinatorProtocol {
     
     func showFavorites() {
         let favoritesViewController = FavoritesViewController()
-        favoritesViewController.tabBarItem = UITabBarItem(title: nil, image: .heartAsset, selectedImage: nil)
         navigationController.setViewControllers([favoritesViewController], animated: false)
     }
 }

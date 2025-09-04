@@ -5,7 +5,6 @@ final class ThemedTabBarController: UITabBarController, Themeable {
     override func viewDidLoad() {
         super.viewDidLoad()
         ThemeManager.shared.register(self)
-        applyTheme()
     }
     
     func applyTheme() {
@@ -14,12 +13,8 @@ final class ThemedTabBarController: UITabBarController, Themeable {
         
         appearance.stackedLayoutAppearance.normal.iconColor = Colors.gray
         appearance.stackedLayoutAppearance.selected.iconColor = Colors.accent
-        
-        appearance.inlineLayoutAppearance.normal.iconColor = Colors.gray
-        appearance.inlineLayoutAppearance.selected.iconColor = Colors.accent
-        
-        appearance.compactInlineLayoutAppearance.normal.iconColor = Colors.gray
-        appearance.compactInlineLayoutAppearance.selected.iconColor = Colors.accent
+        appearance.stackedLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.clear]
+        appearance.stackedLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: UIColor.clear]
         
         appearance.stackedLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: Colors.gray]
         appearance.stackedLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: Colors.accent]

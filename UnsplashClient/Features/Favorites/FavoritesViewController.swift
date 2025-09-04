@@ -18,7 +18,7 @@ final class FavoritesViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "favorites"
+        navigationItem.title = "Favorites"
     }
 }
 

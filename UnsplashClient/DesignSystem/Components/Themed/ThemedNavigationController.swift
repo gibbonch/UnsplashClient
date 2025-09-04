@@ -21,6 +21,8 @@ final class ThemedNavigationController: UINavigationController, Themeable {
             navigationBar.compactScrollEdgeAppearance = appearance
         }
         
+        navigationBar.tintColor = Colors.textPrimary
+        
         navigationBar.setNeedsLayout()
         navigationBar.layoutIfNeeded()
     }

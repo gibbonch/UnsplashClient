@@ -1,8 +1,9 @@
-//
-//  SearchViewController.swift
-//  UnsplashClient
-//
-//  Created by Александр Торопов on 02.09.2025.
-//
+import UIKit
 
-import Foundation
+final class SearchViewController: UIViewController {
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .red
+    }
+}
