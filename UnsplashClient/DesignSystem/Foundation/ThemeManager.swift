@@ -7,50 +7,62 @@ final class ThemeManager {
     
     static let shared = ThemeManager()
     
-    private(set) var style: UIUserInterfaceStyle = .unspecified {
-        didSet {
-            guard style != oldValue else { return }
-            notifyComponents()
+    private var observers = NSHashTable<AnyObject>.weakObjects()
+    private var themeObserverView: ThemeObserverView?
+    
+    var isDarkMode: Bool {
+        if #available(iOS 13.0, *) {
+            return UITraitCollection.current.userInterfaceStyle == .dark
         }
+        return false
     }
-    
-    private var components = NSHashTable<AnyObject>.weakObjects()
-    
-    private lazy var observerView: ThemeObserverView = {
-        let view = ThemeObserverView()
-        view.isHidden = true
-        view.onThemeChanged = { [weak self] style in
-            self?.style = style
-        }
-        return view
-    }()
     
     private init() { }
     
-    func setup(with window: UIWindow) {
-        style = window.traitCollection.userInterfaceStyle
+    func register(_ observer: Themeable) {
+        observers.add(observer)
+        observer.applyTheme()
+    }
+    
+    func unregister(_ observer: Themeable) {
+        observers.remove(observer)
+    }
+    
+    func setupObserver(in window: UIWindow) {
+        guard themeObserverView == nil else { return }
+        
+        let observerView = ThemeObserverView()
+        observerView.isHidden = true
+        observerView.isUserInteractionEnabled = false
+        
         window.addSubview(observerView)
+        observerView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            observerView.topAnchor.constraint(equalTo: window.topAnchor),
+            observerView.leadingAnchor.constraint(equalTo: window.leadingAnchor),
+            observerView.widthAnchor.constraint(equalToConstant: 1),
+            observerView.heightAnchor.constraint(equalToConstant: 1),
+        ])
+        
+        observerView.onThemeChanged = { [weak self] _ in
+            self?.notifyObservers()
+        }
+        
+        self.themeObserverView = observerView
     }
     
-    func register(_ component: ThemeApplyable) {
-        components.add(component)
-        component.applyTheme()
-    }
-    
-    func unregister(_ component: ThemeApplyable) {
-        components.remove(component)
-    }
-    
-    private func notifyComponents() {
-        for case let component as ThemeApplyable in components.allObjects {
-            component.applyTheme()
+    private func notifyObservers() {
+        DispatchQueue.main.async { [weak self] in
+            self?.observers.allObjects.compactMap { $0 as? Themeable }.forEach { observer in
+                observer.applyTheme()
+            }
         }
     }
 }
 
-// MARK: - ThemeApplyable
+// MARK: - Themeable
 
-protocol ThemeApplyable: AnyObject {
+protocol Themeable: AnyObject {
     func applyTheme()
 }
 
@@ -58,7 +70,9 @@ protocol ThemeApplyable: AnyObject {
 
 final class ThemeObserverView: UIView {
     
-    var onThemeChanged: ((UIUserInterfaceStyle) -> Void)?
+    var onThemeChanged: ((UIUserInterfaceStyle) -> Void)? {
+        didSet { onThemeChanged?(traitCollection.userInterfaceStyle) }
+    }
     
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)

@@ -12,13 +12,17 @@ final class FavoritesViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    deinit {
+        ThemeManager.shared.unregister(self)
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "favorites"
     }
 }
 
-extension FavoritesViewController: ThemeApplyable {
+extension FavoritesViewController: Themeable {
     
     func applyTheme() {
         view.backgroundColor = Colors.backgroundPrimary

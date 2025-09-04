@@ -12,6 +12,10 @@ final class HomeViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    deinit {
+        ThemeManager.shared.unregister(self)
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -19,7 +23,7 @@ final class HomeViewController: UIViewController {
     }
 }
 
-extension HomeViewController: ThemeApplyable {
+extension HomeViewController: Themeable {
     
     func applyTheme() {
         view.backgroundColor = Colors.backgroundPrimary

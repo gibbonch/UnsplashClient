@@ -16,7 +16,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         guard let window else { return }
         
-        ThemeManager.shared.setup(with: window)
+        ThemeManager.shared.setupObserver(in: window)
         
         appCoordinator = AppCoordinator(window: window, diContainer: diContainer)
         appCoordinator?.start()

@@ -238,7 +238,7 @@ final class BannerView: UIView {
 
 // MARK: - ThemeApplyable
 
-extension BannerView: ThemeApplyable {
+extension BannerView: Themeable {
     func applyTheme() {
         guard let banner else { return }
         switch banner.type {

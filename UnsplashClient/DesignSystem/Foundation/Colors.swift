@@ -2,80 +2,79 @@ import UIKit
 
 enum Colors {
     
-    // MARK: - Background
+    // MARK: - Background Colors
     
     static var backgroundPrimary: UIColor {
-        switch ThemeManager.shared.style {
-        case .light:
-            return UIColor(hex: "#f8f9fa")!
-        default:
-            return UIColor(hex: "#0c0c0c")!
-        }
+        return ThemeManager.shared.isDarkMode ? DarkColors.backgroundPrimary : LightColors.backgroundPrimary
     }
     
     static var backgroundSecondary: UIColor {
-        switch ThemeManager.shared.style {
-        case .light:
-            return UIColor(hex: "#ffffff")!
-        default:
-            return UIColor(hex: "#141415")!
-        }
+        return ThemeManager.shared.isDarkMode ? DarkColors.backgroundSecondary : LightColors.backgroundSecondary
     }
     
-    // MARK: - Text
+    // MARK: - Text Colors
     
     static var textPrimary: UIColor {
-        switch ThemeManager.shared.style {
-        case .light:
-            return UIColor(hex: "#000000")!
-        default:
-            return UIColor(hex: "#ffffff")!
-        }
+        return ThemeManager.shared.isDarkMode ? DarkColors.textPrimary : LightColors.textPrimary
     }
     
     static var textSecondary: UIColor {
-        switch ThemeManager.shared.style {
-        case .light:
-            return UIColor(hex: "#808186")!
-        default:
-            return UIColor(hex: "#8a8a8a")!
-        }
+        return ThemeManager.shared.isDarkMode ? DarkColors.textSecondary : LightColors.textSecondary
     }
     
     static var textAccent: UIColor {
-        switch ThemeManager.shared.style {
-        case .light:
-            return UIColor(hex: "#ffffff")!
-        default:
-            return UIColor(hex: "#000000")!
-        }
+        return ThemeManager.shared.isDarkMode ? DarkColors.textAccent : LightColors.textAccent
     }
     
-    // MARK: - Accent & Utility
+    // MARK: - Accent Colors
     
     static var accent: UIColor {
-        switch ThemeManager.shared.style {
-        case .light:
-            return UIColor(hex: "#000000")!
-        default:
-            return UIColor(hex: "#ffffff")!
-        }
+        return ThemeManager.shared.isDarkMode ? DarkColors.accent : LightColors.accent
     }
     
     static var gray: UIColor {
-        switch ThemeManager.shared.style {
-        case .light:
-            return UIColor(hex: "#c8c8c8")!
-        default:
-            return UIColor(hex: "#838383")!
-        }
+        return ThemeManager.shared.isDarkMode ? DarkColors.gray : LightColors.gray
     }
     
     static var red: UIColor {
-        UIColor(hex: "#ff4a4a")!
+        return ThemeManager.shared.isDarkMode ? DarkColors.red : LightColors.red
     }
     
     static var white: UIColor {
-        UIColor(hex: "#ffffff")!
+        return ThemeManager.shared.isDarkMode ? DarkColors.white : LightColors.white
     }
+}
+
+// MARK: - Light Theme Colors
+
+private enum LightColors {
+    
+    static var backgroundPrimary = UIColor(hex: "#f8f9fa")!
+    static var backgroundSecondary = UIColor(hex: "#ffffff")!
+    
+    static var textPrimary = UIColor(hex: "#000000")!
+    static var textSecondary = UIColor(hex: "#808186")!
+    static var textAccent = UIColor(hex: "#ffffff")!
+    
+    static var accent = UIColor(hex: "#000000")!
+    static var gray = UIColor(hex: "#c8c8c8")!
+    static var red = UIColor(hex: "#ff4a4a")!
+    static var white = UIColor(hex: "#ffffff")!
+}
+
+// MARK: - Dark Theme Colors
+
+private enum DarkColors {
+    
+    static var backgroundPrimary = UIColor(hex: "#0c0c0c")!
+    static var backgroundSecondary = UIColor(hex: "#141415")!
+    
+    static var textPrimary = UIColor(hex: "#ffffff")!
+    static var textSecondary = UIColor(hex: "#8a8a8a")!
+    static var textAccent = UIColor(hex: "#000000")!
+    
+    static var accent = UIColor(hex: "#ffffff")!
+    static var gray = UIColor(hex: "#838383")!
+    static var red = UIColor(hex: "#ff4a4a")!
+    static var white = UIColor(hex: "#ffffff")!
 }

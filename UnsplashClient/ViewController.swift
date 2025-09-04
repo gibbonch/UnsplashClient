@@ -45,7 +45,7 @@ class ViewController: UIViewController, BannerPresenting {
     }
 }
 
-extension ViewController: ThemeApplyable {
+extension ViewController: Themeable {
     
     func applyTheme() {
         view.backgroundColor = Colors.backgroundPrimary

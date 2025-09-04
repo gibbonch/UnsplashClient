@@ -10,7 +10,7 @@ final class AppCoordinator: CoordinatorProtocol {
     init(window: UIWindow, diContainer: DIContainerProtocol) {
         self.window = window
         self.diContainer = diContainer
-        tabBarController = UITabBarController()
+        tabBarController = ThemedTabBarController()
     }
     
     func start() {
@@ -18,7 +18,7 @@ final class AppCoordinator: CoordinatorProtocol {
     }
     
     private func showMainFlow() {
-        let homeNavigationController = UINavigationController()
+        let homeNavigationController = ThemedNavigationController()
         let homeDIContainer = DIContainer()
         let homeCoordinator = HomeCoordinator(
             navigationController: homeNavigationController,
@@ -26,7 +26,7 @@ final class AppCoordinator: CoordinatorProtocol {
         )
         childCoordinators.append(homeCoordinator)
         
-        let favoritesNavigationController = UINavigationController()
+        let favoritesNavigationController = ThemedNavigationController()
         let favoritesDIContainer = DIContainer()
         let favoritesCoordinator = FavoritesCoordinator(
             navigationController: favoritesNavigationController,
@@ -44,7 +44,5 @@ final class AppCoordinator: CoordinatorProtocol {
         
         homeCoordinator.start()
         favoritesCoordinator.start()
-        
-        
     }
 }
