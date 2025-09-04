@@ -1,8 +1,8 @@
 import Foundation
 
-struct UserDTO: Decodable {
+struct UserDTO: ResponseType {
     
-    struct ProfileImageDTO: Decodable {
+    struct ProfileImageDTO: ResponseType {
         let small: String
         let medium: String
         let large: String

@@ -1,6 +1,20 @@
 import Foundation
 
-final class NetworkClient {
+protocol NetworkClientProtocol {
+    
+    @discardableResult
+    func request<T: Endpoint>(
+        endpoint: T,
+        cachePolicy: URLRequest.CachePolicy,
+        timeoutInterval: TimeInterval,
+        completion: @escaping (Result<T.Response, NetworkError>) -> Void
+    ) -> CancellableTask?
+}
+
+// MARK: - NetworkClient
+
+final class NetworkClient: NetworkClientProtocol {
+    
     
     private let configuration: NetworkClientConfiguration
     private let session: URLSession
@@ -19,8 +33,8 @@ final class NetworkClient {
     @discardableResult
     func request<T: Endpoint>(
         endpoint: T,
-        cachePolicy: URLRequest.CachePolicy? = nil,
-        timeoutInterval: TimeInterval? = nil,
+        cachePolicy: URLRequest.CachePolicy,
+        timeoutInterval: TimeInterval,
         completion: @escaping (Result<T.Response, NetworkError>) -> Void
     ) -> CancellableTask? {
         
@@ -28,8 +42,8 @@ final class NetworkClient {
         do {
             request = try requestBuilder.buildRequest(
                 endpoint: endpoint,
-                cachePolicy: cachePolicy ?? configuration.cachePolicy,
-                timeoutInterval: timeoutInterval ?? configuration.timeoutInterval,
+                cachePolicy: cachePolicy,
+                timeoutInterval: timeoutInterval,
                 middlewareChain: middlewareChain
             )
         } catch let error as NetworkError {
