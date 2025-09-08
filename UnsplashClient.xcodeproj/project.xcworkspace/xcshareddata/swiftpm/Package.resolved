@@ -1,5 +1,5 @@
 {
-  "originHash" : "a910582474dbe5b525bea5faf3436f2e67b78493f5739eed518390419e3eff52",
+  "originHash" : "917a2b512148612347b307b5f8d624e74df48af36fa322c80901a86fc0e1317f",
   "pins" : [
     {
       "identity" : "kingfisher",
@@ -8,15 +8,6 @@
       "state" : {
         "revision" : "2015fda791daa72c8058619545a593bf8c1dd59f",
         "version" : "8.5.0"
-      }
-    },
-    {
-      "identity" : "unifiedblurhash",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/iankoex/UnifiedBlurHash",
-      "state" : {
-        "revision" : "675d79835d6338e3fd4a314ef3220ae41f7eb6d4",
-        "version" : "1.2.0"
       }
     }
   ],

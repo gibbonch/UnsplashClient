@@ -5,29 +5,53 @@ protocol NetworkClientProtocol {
     @discardableResult
     func request<T: Endpoint>(
         endpoint: T,
+        completion: @escaping (Result<T.Response, NetworkError>) -> Void
+    ) -> CancellableTask?
+    
+    @discardableResult
+    func request<T: Endpoint>(
+        endpoint: T,
         cachePolicy: URLRequest.CachePolicy,
         timeoutInterval: TimeInterval,
         completion: @escaping (Result<T.Response, NetworkError>) -> Void
     ) -> CancellableTask?
 }
 
-// MARK: - NetworkClient
-
 final class NetworkClient: NetworkClientProtocol {
     
+    // MARK: - Private Properties
     
-    private let configuration: NetworkClientConfiguration
     private let session: URLSession
-    private let middlewareChain: MiddlewareChain
-    private let requestBuilder: RequestBuilder
-    private let responseProcessor: ResponseProcessor
+    private let baseURL: URL
     
-    init(configuration: NetworkClientConfiguration, middlewareChain: MiddlewareChain = MiddlewareChain()) {
-        self.configuration = configuration
-        self.session = URLSession(configuration: configuration.sessionConfiguration)
+    private let decoder: JSONDecoder
+    
+    private let middlewareChain: MiddlewareChainProtocol
+    
+    // MARK: - Lifecycle
+    
+    init(
+        baseURL: URL,
+        configuration: URLSessionConfiguration = .default,
+        decoder: JSONDecoder = JSONDecoder(),
+        middlewareChain: MiddlewareChainProtocol = MiddlewareChain()
+    ) {
+        self.baseURL = baseURL
+        session = URLSession(configuration: configuration)
+        self.decoder = decoder
         self.middlewareChain = middlewareChain
-        self.requestBuilder = RequestBuilder(configuration: configuration)
-        self.responseProcessor = ResponseProcessor(decoder: configuration.decoder)
+    }
+    
+    // MARK: - Public Methods
+    
+    @discardableResult
+    func request<T: Endpoint>(endpoint: T, completion: @escaping (Result<T.Response, NetworkError>) -> Void) -> CancellableTask? {
+        request(
+            endpoint: endpoint,
+            cachePolicy: session.configuration.requestCachePolicy,
+            timeoutInterval: session.configuration.timeoutIntervalForRequest,
+            completion: completion
+        )
     }
     
     @discardableResult
@@ -40,132 +64,117 @@ final class NetworkClient: NetworkClientProtocol {
         
         let request: URLRequest
         do {
-            request = try requestBuilder.buildRequest(
-                endpoint: endpoint,
-                cachePolicy: cachePolicy,
-                timeoutInterval: timeoutInterval,
-                middlewareChain: middlewareChain
-            )
-        } catch let error as NetworkError {
-            completion(.failure(error))
-            return nil
+            request = try buildRequest(for: endpoint, cachePolicy: cachePolicy, timeoutInterval: timeoutInterval)
         } catch {
-            completion(.failure(.unknown))
+            completion(.failure(error as? NetworkError ?? .unknown))
             return nil
         }
         
         let task = session.dataTask(with: request) { [weak self] data, response, error in
-            if let error {
-                completion(.failure(.networkError(error)))
+            guard let self else {
+                completion(.failure(.unknown))
                 return
             }
             
-            guard let httpResponse = response as? HTTPURLResponse else {
-                completion(.failure(.invalidResponse))
+            if let networkError = mapToNetworkError(error) {
+                completion(.failure(networkError))
                 return
             }
             
-            self?.middlewareChain.processResponse(httpResponse, data: data, for: request)
-            
-            guard 200...299 ~= httpResponse.statusCode else {
-                completion(.failure(.httpError(httpResponse.statusCode)))
-                return
+            do {
+                try validateResponse(response)
+                
+                guard let data else {
+                    completion(.failure(.invalidData))
+                    return
+                }
+                
+                let dto = try decoder.decode(T.Response.self, from: data)
+                completion(.success(dto))
+                
+            } catch let error as NetworkError {
+                completion(.failure(error))
+            } catch let error as DecodingError {
+                completion(.failure(.decodingError(error)))
+            } catch {
+                completion(.failure(.unknown))
             }
-            
-            self?.responseProcessor.processResponse(
-                data: data,
-                responseType: T.Response.self,
-                completion: completion
-            )
         }
         
         task.resume()
         return task
     }
-}
-
-// MARK: - Request Builder
-
-final class RequestBuilder {
-    private let configuration: NetworkClientConfiguration
     
-    init(configuration: NetworkClientConfiguration) {
-        self.configuration = configuration
-    }
+    // MARK: - Private Methods
     
-    func buildRequest(
-        endpoint: any Endpoint,
-        cachePolicy: URLRequest.CachePolicy,
-        timeoutInterval: TimeInterval,
-        middlewareChain: MiddlewareChain
-    ) throws -> URLRequest {
-        
+    private func buildRequest(for endpoint: any Endpoint, cachePolicy: URLRequest.CachePolicy, timeoutInterval: TimeInterval) throws -> URLRequest {
         let url = try buildURL(for: endpoint)
         var request = URLRequest(url: url, cachePolicy: cachePolicy, timeoutInterval: timeoutInterval)
         
-        configureRequest(&request, with: endpoint)
+        request.httpMethod = endpoint.method.rawValue
+        request.httpBody = endpoint.body
         
-        return middlewareChain.processRequest(request)
+        endpoint.headers.forEach { key, value in
+            if !key.isEmpty, !value.isEmpty {
+                request.setValue(value, forHTTPHeaderField: key)
+            }
+        }
+        
+        let processedRequest = middlewareChain.processRequest(request)
+        
+        return processedRequest
     }
     
     private func buildURL(for endpoint: any Endpoint) throws -> URL {
-        guard var components = URLComponents(url: configuration.baseURL, resolvingAgainstBaseURL: true) else {
-            throw NetworkError.invalidURL(configuration.baseURL.absoluteString)
+        guard var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: true) else {
+            throw NetworkError.invalidURL(baseURL.absoluteString)
         }
         
         components.path = endpoint.path
-        components.queryItems = endpoint.params.map { name, value in
-            URLQueryItem(name: name, value: value.description)
-        }
+        
+        components.queryItems = endpoint.params
+            .filter { key, value in !key.isEmpty && !value.isEmpty }
+            .map { key, value in URLQueryItem(name: key, value: value) }
         
         guard let url = components.url else {
-            throw NetworkError.invalidURL(components.description)
+            let errorDescription = "Failed to construct URL from components: \(components)"
+            throw NetworkError.invalidURL(errorDescription)
         }
         
         return url
     }
     
-    private func configureRequest(_ request: inout URLRequest, with endpoint: any Endpoint) {
-        request.httpMethod = endpoint.method.rawValue
+    private func mapToNetworkError(_ error: Error?) -> NetworkError? {
+        guard let error else { return nil }
+        guard let urlError = error as? URLError else { return .unknown}
         
-        for header in endpoint.headers {
-            request.setValue(header.value, forHTTPHeaderField: header.key)
+        switch urlError.code {
+        case .cancelled:
+            return .cancelled
+        case .timedOut:
+            return .timeout
+        case .notConnectedToInternet, .networkConnectionLost:
+            return .noConnection
+        default:
+            return .transportError(urlError)
         }
-        
-        request.httpBody = endpoint.body
-    }
-}
-
-// MARK: - Response Processor
-
-final class ResponseProcessor {
-    private let decoder: JSONDecoder
-    
-    init(decoder: JSONDecoder) {
-        self.decoder = decoder
     }
     
-    func processResponse<T: ResponseType>(
-        data: Data?,
-        responseType: T.Type,
-        completion: @escaping (Result<T, NetworkError>) -> Void
-    ) {
-        guard let data = data else {
-            DispatchQueue.main.async {
-                completion(.failure(.invalidData))
-            }
-            return
+    private func validateResponse(_ response: URLResponse?) throws {
+        guard let response = response as? HTTPURLResponse else {
+            throw NetworkError.invalidResponse
         }
         
-        do {
-            let result = try decoder.decode(T.self, from: data)
-            DispatchQueue.main.async {
-                completion(.success(result))
-            }
-        } catch {
-            DispatchQueue.main.async {
-                completion(.failure(.decodingError(error)))
-            }
+        middlewareChain.processResponse(response)
+        
+        let statusCode = response.statusCode
+        
+        if (400...499).contains(statusCode) {
+            throw NetworkError.clientError(statusCode)
+        }
+        
+        if (500...599).contains(statusCode) {
+            throw NetworkError.serverError(statusCode)
         }
     }
 }

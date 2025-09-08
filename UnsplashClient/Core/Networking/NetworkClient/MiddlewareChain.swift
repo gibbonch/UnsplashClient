@@ -1,10 +1,11 @@
 import Foundation
 
 protocol MiddlewareChainProtocol {
+    
     func addRequestMiddleware(_ middleware: RequestMiddleware)
     func addResponseMiddleware(_ middleware: ResponseMiddleware)
     func processRequest(_ request: URLRequest) -> URLRequest
-    func processResponse(_ response: HTTPURLResponse, data: Data?, for request: URLRequest)
+    func processResponse(_ response: HTTPURLResponse)
 }
 
 final class MiddlewareChain: MiddlewareChainProtocol {
@@ -30,9 +31,9 @@ final class MiddlewareChain: MiddlewareChainProtocol {
         return currentRequest
     }
     
-    func processResponse(_ response: HTTPURLResponse, data: Data?, for request: URLRequest) {
+    func processResponse(_ response: HTTPURLResponse) {
         for middleware in responseMiddlewares {
-            middleware.process(response: response, data: data, for: request)
+            middleware.process(response: response)
         }
     }
 }

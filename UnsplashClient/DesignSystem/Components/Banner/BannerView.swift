@@ -236,7 +236,7 @@ final class BannerView: UIView {
     }
 }
 
-// MARK: - ThemeApplyable
+// MARK: - Themeable
 
 extension BannerView: Themeable {
     func applyTheme() {

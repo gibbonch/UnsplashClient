@@ -16,7 +16,7 @@ final class PhotoRepository: PhotoRepositoryProtocol {
     
     func fetchPhotos(page: Int, perPage: Int, completion: @escaping (Result<[Photo], Error>) -> Void) {
         let endpoint = GetPhotosEndpoint(page: page, perPage: perPage)
-        client.request(endpoint: endpoint, cachePolicy: .returnCacheDataElseLoad, timeoutInterval: 10) { result in
+        client.request(endpoint: endpoint) { result in
             switch result {
             case .success(let photoDTOs):
                 let photos = photoDTOs.compactMap { Photo(dto: $0) }
@@ -31,7 +31,7 @@ final class PhotoRepository: PhotoRepositoryProtocol {
     
     func fetchPhoto(id: String, completion: @escaping (Result<Photo, Error>) -> Void) {
         let endpoint = GetPhotoEndpoint(id: id)
-        client.request(endpoint: endpoint, cachePolicy: .returnCacheDataElseLoad, timeoutInterval: 10) { result in
+        client.request(endpoint: endpoint) { result in
             switch result {
             case .success(let photoDTO):
                 if let photo = Photo(dto: photoDTO) {

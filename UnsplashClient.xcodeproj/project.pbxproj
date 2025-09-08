@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		184762F22E6629CD009F2456 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 184762F12E6629CD009F2456 /* Kingfisher */; };
-		184762F52E662A0C009F2456 /* UnifiedBlurHash in Frameworks */ = {isa = PBXBuildFile; productRef = 184762F42E662A0C009F2456 /* UnifiedBlurHash */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -41,7 +40,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				184762F52E662A0C009F2456 /* UnifiedBlurHash in Frameworks */,
 				184762F22E6629CD009F2456 /* Kingfisher in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -87,7 +85,6 @@
 			name = UnsplashClient;
 			packageProductDependencies = (
 				184762F12E6629CD009F2456 /* Kingfisher */,
-				184762F42E662A0C009F2456 /* UnifiedBlurHash */,
 			);
 			productName = UnsplashClient;
 			productReference = 189512F22E66020F00152ABB /* UnsplashClient.app */;
@@ -119,7 +116,6 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				184762F02E6629CD009F2456 /* XCRemoteSwiftPackageReference "Kingfisher" */,
-				184762F32E662A0C009F2456 /* XCRemoteSwiftPackageReference "UnifiedBlurHash" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 189512F32E66020F00152ABB /* Products */;
@@ -398,14 +394,6 @@
 				minimumVersion = 8.5.0;
 			};
 		};
-		184762F32E662A0C009F2456 /* XCRemoteSwiftPackageReference "UnifiedBlurHash" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/iankoex/UnifiedBlurHash";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.2.0;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -413,11 +401,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 184762F02E6629CD009F2456 /* XCRemoteSwiftPackageReference "Kingfisher" */;
 			productName = Kingfisher;
-		};
-		184762F42E662A0C009F2456 /* UnifiedBlurHash */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 184762F32E662A0C009F2456 /* XCRemoteSwiftPackageReference "UnifiedBlurHash" */;
-			productName = UnifiedBlurHash;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

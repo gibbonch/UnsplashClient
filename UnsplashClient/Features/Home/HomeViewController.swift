@@ -1,14 +1,12 @@
 import UIKit
 
-protocol HomeNavigationResponder: AnyObject {
-    func homeViewControllerDidStartSearch(_ vc: HomeViewController)
-    func homeViewControllerDidEndSearch(_ vc: HomeViewController)
+protocol HideKeyboardResponder: AnyObject {
+    func hideKeyboard()
 }
 
 final class HomeViewController: UIViewController {
     
-    //    private let viewModel: HomeViewModel
-    weak var delegate: HomeNavigationResponder?
+    private let viewModel: HomeViewModelProtocol
     
     private lazy var searchController: UISearchController = {
         let searchController = UISearchController()
@@ -18,7 +16,8 @@ final class HomeViewController: UIViewController {
         return searchController
     }()
     
-    init() {
+    init(viewModel: HomeViewModelProtocol) {
+        self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -40,6 +39,7 @@ final class HomeViewController: UIViewController {
     private func setupNavigationBar() {
         navigationItem.title = "Unsplash"
         navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = false
     }
 }
 
@@ -48,25 +48,19 @@ final class HomeViewController: UIViewController {
 extension HomeViewController: UISearchBarDelegate {
     
     func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
-        delegate?.homeViewControllerDidStartSearch(self)
-        print("startEditing")
-    }
-    
-    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        if searchText.isEmpty {
-            print("cleared")
-        } else {
-            print(searchText)
-        }
+        viewModel.searchDidBeginEditing()
     }
     
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
-        delegate?.homeViewControllerDidEndSearch(self)
-        print("canceled")
+        viewModel.searchDidCancel()
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        viewModel.searchTextDidChange(searchText)
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        print("search")
+        viewModel.searchButtonDidTap()
     }
 }
 
@@ -76,5 +70,14 @@ extension HomeViewController: Themeable {
     
     func applyTheme() {
         view.backgroundColor = Colors.backgroundPrimary
+    }
+}
+
+// MARK: - HideKeyboardResponder
+
+extension HomeViewController: HideKeyboardResponder {
+    
+    func hideKeyboard() {
+        searchController.searchBar.endEditing(true)
     }
 }

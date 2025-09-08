@@ -14,37 +14,66 @@ final class AppCoordinator: CoordinatorProtocol {
     }
     
     func start() {
-        showMainFlow()
+        showSplash()
+        setupTabBarController()
     }
     
-    private func showMainFlow() {
-        let homeNavigationController = ThemedNavigationController()
-        homeNavigationController.tabBarItem = UITabBarItem(title: nil, image: .homeAsset, selectedImage: nil)
-        let homeDIContainer = DIContainer()
-        let homeCoordinator = HomeCoordinator(
-            navigationController: homeNavigationController,
-            diContainer: homeDIContainer
-        )
-        childCoordinators.append(homeCoordinator)
-        
-        let favoritesNavigationController = ThemedNavigationController()
-        favoritesNavigationController.tabBarItem = UITabBarItem(title: nil, image: .heartAsset, selectedImage: nil)
-        let favoritesDIContainer = DIContainer()
-        let favoritesCoordinator = FavoritesCoordinator(
-            navigationController: favoritesNavigationController,
-            diContainer: favoritesDIContainer
-        )
-        childCoordinators.append(favoritesCoordinator)
+    private func showSplash() {
+        window.rootViewController = SplashViewController()
+        window.makeKeyAndVisible()
+    }
+    
+    private func setupTabBarController() {
+        let homeNavigationController = createHomeNavigationController()
+        let favoritesNavigationController = createFavoritesNavigationController()
         
         tabBarController.viewControllers = [
             homeNavigationController,
             favoritesNavigationController,
         ]
         
-        window.rootViewController = tabBarController
-        window.makeKeyAndVisible()
+        childCoordinators.forEach { $0.start() }
+    }
+    
+    private func createHomeNavigationController() -> UINavigationController {
+        let homeNavigationController = ThemedNavigationController()
+        homeNavigationController.tabBarItem = UITabBarItem(title: nil, image: .homeAsset, selectedImage: nil)
         
-        homeCoordinator.start()
-        favoritesCoordinator.start()
+        let homeDIContainer = DIContainer()
+        homeDIContainer.parent = diContainer
+        
+        PhotoFeedAssembly().assemble(diContainer: homeDIContainer)
+        
+        let homeCoordinator = HomeCoordinator(
+            navigationController: homeNavigationController,
+            diContainer: homeDIContainer
+        )
+        
+        homeCoordinator.onFinishPrepare = { [weak self] in
+            self?.showMainFlow()
+        }
+        
+        childCoordinators.append(homeCoordinator)
+        
+        return homeNavigationController
+    }
+    
+    private func createFavoritesNavigationController() -> UINavigationController {
+        let favoritesNavigationController = ThemedNavigationController()
+        favoritesNavigationController.tabBarItem = UITabBarItem(title: nil, image: .heartAsset, selectedImage: nil)
+        
+        let favoritesDIContainer = DIContainer()
+        favoritesDIContainer.parent = diContainer
+        let favoritesCoordinator = FavoritesCoordinator(
+            navigationController: favoritesNavigationController,
+            diContainer: favoritesDIContainer
+        )
+        childCoordinators.append(favoritesCoordinator)
+        
+        return favoritesNavigationController
+    }
+    
+    private func showMainFlow() {
+        window.rootViewController = tabBarController
     }
 }

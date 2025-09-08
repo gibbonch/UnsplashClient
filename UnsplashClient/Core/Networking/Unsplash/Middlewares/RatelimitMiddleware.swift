@@ -7,7 +7,7 @@ struct RateLimitMiddleware: ResponseMiddleware {
         self.onRateLimitChange = onRateLimitChange
     }
     
-    func process(response: HTTPURLResponse, data: Data?, for request: URLRequest) {
+    func process(response: HTTPURLResponse) {
         if let limitHeader = response.value(forHTTPHeaderField: "X-Ratelimit-Limit"),
            let remainingHeader = response.value(forHTTPHeaderField: "X-Ratelimit-Remaining"),
            let limit = Int(limitHeader),

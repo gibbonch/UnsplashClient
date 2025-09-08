@@ -16,16 +16,15 @@ struct Photo {
     }
     
     let id: String
+    let urls: URLs
     let author: User
-    let createdAt: Date
+    let createdAt: Date?
     let resolution: Resolution
     let color: Hex
-    let blurHash: Hash
     let description: String?
 }
 
 typealias Hex = String
-typealias Hash = String
 
 struct PhotoWithLikeStatus {
     let photo: Photo

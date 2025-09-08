@@ -6,15 +6,44 @@ final class AppAssembly: AssemblyProtocol {
         let networkClient = createNetworkClient()
         diContainer.register(for: NetworkClientProtocol.self, networkClient)
         diContainer.register(for: ContextProvider.self, CoreDataStack())
+        diContainer.register(for: PhotoRepositoryProtocol.self, PhotoRepository(client: networkClient))
     }
     
     private func createNetworkClient() -> NetworkClientProtocol {
-        let configuration = NetworkClientConfiguration(
-            baseURL: UnsplashEnvironment.baseURL
+        let memoryCapacity = 25 * 1024 * 1024
+        let diskCapacity = 250 * 1024 * 1024
+        
+        let urlCache = URLCache(
+            memoryCapacity: memoryCapacity,
+            diskCapacity: diskCapacity,
         )
         
-        let chain = MiddlewareChain.with(requestMiddlewares: [AuthorizationMiddleware()])
+        let sessionConfiguration = URLSessionConfiguration.default
+        sessionConfiguration.urlCache = urlCache
+        sessionConfiguration.requestCachePolicy = .useProtocolCachePolicy
+        sessionConfiguration.timeoutIntervalForRequest = 5
         
-        return NetworkClient(configuration: configuration, middlewareChain: chain)
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        
+        #if DEBUG
+        let rateLimitMiddleware = RateLimitMiddleware {
+            print("Rate limit: \($0.remain)/\($0.limit)")
+        }
+        let chain = MiddlewareChain.with(
+            requestMiddlewares: [AuthorizationMiddleware()],
+            responseMiddlewares: [rateLimitMiddleware]
+        )
+        #else
+        let chain = MiddlewareChain.with(requestMiddlewares: [AuthorizationMiddleware()])
+        #endif
+        
+        return NetworkClient(
+            baseURL: UnsplashEnvironment.baseURL,
+            configuration: sessionConfiguration,
+            decoder: decoder,
+            middlewareChain: chain
+        )
     }
 }

@@ -1,7 +1,9 @@
 import Foundation
 
 protocol Endpoint {
-    associatedtype Response: ResponseType
+    
+    associatedtype Response: Decodable
+    
     var path: String { get }
     var method: HTTPMethod { get }
     var params: Params { get }
@@ -11,7 +13,3 @@ protocol Endpoint {
 
 typealias Params = [String: String]
 typealias Headers = [String: String]
-
-protocol ResponseType: Decodable { }
-
-extension Array: ResponseType where Element: ResponseType { }

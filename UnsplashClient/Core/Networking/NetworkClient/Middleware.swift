@@ -5,5 +5,5 @@ protocol RequestMiddleware {
 }
 
 protocol ResponseMiddleware {
-    func process(response: HTTPURLResponse, data: Data?, for request: URLRequest)
+    func process(response: HTTPURLResponse)
 }

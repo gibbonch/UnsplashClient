@@ -2,51 +2,66 @@ import UIKit
 
 final class HomeCoordinator: CoordinatorProtocol {
     
+    var onFinishPrepare: (() -> Void)?
+    
     private let navigationController: UINavigationController
     private let diContainer: DIContainerProtocol
     
-    private let rootViewController: HomeViewController
-    private let photoFeedViewController: UIViewController
+    private let homeViewController: HomeViewController
     private var searchViewController: UIViewController?
+    
+    private var isSearching = false
     
     init(navigationController: UINavigationController, diContainer: DIContainerProtocol) {
         self.navigationController = navigationController
         self.diContainer = diContainer
         
-        rootViewController = HomeViewController()
-        photoFeedViewController = PhotoFeedViewController()
-        
-        rootViewController.delegate = self
+        let homeViewModel = HomeViewModel()
+        homeViewController = HomeViewController(viewModel: homeViewModel)
+        homeViewModel.responder = self
     }
     
     func start() {
-        navigationController.setViewControllers([rootViewController], animated: false)
-        
-        rootViewController.addChild(photoFeedViewController)
-        rootViewController.view.addSubview(photoFeedViewController.view)
-        photoFeedViewController.view.frame = rootViewController.view.frame
-        photoFeedViewController.didMove(toParent: rootViewController)
+        navigationController.setViewControllers([homeViewController], animated: false)
+        showPhotosFeed()
     }
     
-    func showFeed() {
+    private func showPhotosFeed(with query: SearchQuery? = nil) {
+        let useCase = diContainer.resolve(FetchPhotosUseCaseProtocol.self)!
+        let viewModel = PhotoFeedViewModel(fetchPhotosUseCase: useCase)
+        viewModel.responder = self
+        let photoFeedViewController = PhotoFeedViewController(viewModel: viewModel)
+        
+        homeViewController.addChild(photoFeedViewController)
+        homeViewController.view.addSubview(photoFeedViewController.view)
+        photoFeedViewController.view.frame = homeViewController.view.frame
+        photoFeedViewController.didMove(toParent: homeViewController)
+    }
+    
+    private func showPhotoDetail() {
+        
+    }
+    
+    private func showSearch() {
+        guard !isSearching else { return }
+        
+        let searchViewController = SearchViewController()
+        searchViewController.hideKeyboardResponder = homeViewController
+        homeViewController.addChild(searchViewController)
+        homeViewController.view.addSubview(searchViewController.view)
+        searchViewController.view.frame = homeViewController.view.frame
+        searchViewController.didMove(toParent: homeViewController)
+        
+        self.searchViewController = searchViewController
+        isSearching = true
+    }
+    
+    private func stopSearch() {
         searchViewController?.willMove(toParent: nil)
         searchViewController?.removeFromParent()
         searchViewController?.view.removeFromSuperview()
         searchViewController = nil
-    }
-    
-    func showDetail() {
-        
-    }
-    
-    func showSearch() {
-        let searchViewController = SearchViewController()
-        rootViewController.addChild(searchViewController)
-        rootViewController.view.addSubview(searchViewController.view)
-        searchViewController.view.frame = rootViewController.view.frame
-        searchViewController.didMove(toParent: rootViewController)
-        
-        self.searchViewController = searchViewController
+        isSearching = false
     }
 }
 
@@ -54,11 +69,22 @@ final class HomeCoordinator: CoordinatorProtocol {
 
 extension HomeCoordinator: HomeNavigationResponder {
     
-    func homeViewControllerDidStartSearch(_ vc: HomeViewController) {
+    func startSearchFlow() {
         showSearch()
     }
     
-    func homeViewControllerDidEndSearch(_ vc: HomeViewController) {
-        showFeed()
+    func stopSearchFlow() {
+        stopSearch()
+    }
+}
+
+// MARK: - PhotoFeedNavigationResponder
+
+extension HomeCoordinator: PhotoFeedNavigationResponder {
+    
+    func routeToDetail(with id: String) { }
+    
+    func preparingFinished() {
+        onFinishPrepare?()
     }
 }

@@ -2,6 +2,8 @@ disabled_rules:
     - trailing_whitespace
     - todo
     - unused_optional_binding
+    - multiline_function_chains
+    - pattern_matching_keywords
 
 opt_in_rules:
     - array_init

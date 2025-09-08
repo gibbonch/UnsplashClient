@@ -1,8 +1,8 @@
 import Foundation
 
-struct UserDTO: ResponseType {
+struct UserDTO: Decodable {
     
-    struct ProfileImageDTO: ResponseType {
+    struct ProfileImageDTO: Decodable {
         let small: String
         let medium: String
         let large: String
@@ -10,14 +10,16 @@ struct UserDTO: ResponseType {
     
     let id: String
     let username: String
-    let firstName: String
+    let firstName: String?
     let lastName: String?
     let profileImage: ProfileImageDTO
 }
 
+// MARK: - Mapping
+
 extension User {
     init?(dto: UserDTO) {
-        guard let mappedProfileImage = ProfileImage(dto: dto.profileImage) else {
+        guard let mappedPhoto = ProfileImage(dto: dto.profileImage) else {
             return nil
         }
         
@@ -25,7 +27,7 @@ extension User {
         nickname = dto.username
         firstName = dto.firstName
         lastName = dto.lastName
-        profileImage = mappedProfileImage
+        profileImage = mappedPhoto
     }
 }
 
