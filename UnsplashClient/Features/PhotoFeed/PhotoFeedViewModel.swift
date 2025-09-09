@@ -6,13 +6,18 @@ protocol PhotoFeedNavigationResponder: AnyObject {
     func preparingFinished()
 }
 
+protocol BannerPresenter: AnyObject {
+    func presentBanner(_ banner: Banner)
+}
+
 protocol PhotoFeedViewModelProtocol {
-    var feedPhotos: AnyPublisher<[FeedPhotoModel], Never> { get }
+    var feedState: AnyPublisher<PhotoFeedState, Never> { get }
     var banner: AnyPublisher<Banner, Never> { get }
     
     func viewLoaded()
     func cellSelected(at indexPath: IndexPath)
     func willDisplayCell(at indexPath: IndexPath)
+    func retryButtonTapped()
     
     func photoResolution(at indexPath: IndexPath) -> Photo.Resolution
 }
@@ -22,9 +27,10 @@ final class PhotoFeedViewModel: PhotoFeedViewModelProtocol {
     // MARK: - Public Properties
     
     weak var responder: PhotoFeedNavigationResponder?
+    weak var bannerPresenter: BannerPresenter?
     
-    var feedPhotos: AnyPublisher<[FeedPhotoModel], Never> {
-        feedPhotosSubject
+    var feedState: AnyPublisher<PhotoFeedState, Never> {
+        feedStateSubject
             .receive(on: DispatchQueue.main)
             .eraseToAnyPublisher()
     }
@@ -42,13 +48,15 @@ final class PhotoFeedViewModel: PhotoFeedViewModelProtocol {
     private let fetchPhotosUseCase: FetchPhotosUseCaseProtocol
     private let searchQuery: SearchQuery?
     
-    private let feedPhotosSubject = PassthroughSubject<[FeedPhotoModel], Never>()
+    private let feedStateSubject = CurrentValueSubject<PhotoFeedState, Never>(.initial)
     private let bannerSubject = PassthroughSubject<Banner, Never>()
     
     private var page: Int = 1
     private let perPage: Int = 20
     private var isFetching = false
-    private var isInitialLoad = true
+    private var isInitialLoading = true
+    
+    private var currentError: Error?
     
     // MARK: - Lifecycle
     
@@ -60,7 +68,9 @@ final class PhotoFeedViewModel: PhotoFeedViewModelProtocol {
     // MARK: - Public Methods
     
     func viewLoaded() {
-        fetchPhotos()
+        if !isFetching {
+            fetchPhotos()
+        }
     }
     
     func cellSelected(at indexPath: IndexPath) {
@@ -75,6 +85,10 @@ final class PhotoFeedViewModel: PhotoFeedViewModelProtocol {
         if indexPath.row >= photos.count - 5 && !isFetching {
             fetchPhotos()
         }
+    }
+    
+    func retryButtonTapped() {
+        fetchPhotos()
     }
     
     func photoResolution(at indexPath: IndexPath) -> Photo.Resolution {
@@ -94,11 +108,9 @@ final class PhotoFeedViewModel: PhotoFeedViewModelProtocol {
                 let uniqueNewPhotos = newPhotos.filter { !existingIDs.contains($0.id) }
                 
                 photos += uniqueNewPhotos
-                
-                if !uniqueNewPhotos.isEmpty {
-                    page += 1
-                }
+                page += 1
                 processPhotos()
+                currentError = nil
                 
             case .failure(let error):
                 handleError(error)
@@ -106,9 +118,9 @@ final class PhotoFeedViewModel: PhotoFeedViewModelProtocol {
             
             isFetching = false
             
-            if isInitialLoad {
-                isInitialLoad = false
+            if isInitialLoading {
                 DispatchQueue.main.async {
+                    self.isInitialLoading = false
                     self.responder?.preparingFinished()
                 }
             }
@@ -117,7 +129,7 @@ final class PhotoFeedViewModel: PhotoFeedViewModelProtocol {
     
     private func processPhotos() {
         let feedPhotoModels = photos.map { mapPhoto($0) }
-        feedPhotosSubject.send(feedPhotoModels)
+        feedStateSubject.send(.photos(feedPhotoModels))
     }
     
     private func mapPhoto(_ photo: Photo) -> FeedPhotoModel {
@@ -133,7 +145,44 @@ final class PhotoFeedViewModel: PhotoFeedViewModelProtocol {
     private func handleError(_ error: Error) {
         // В данный момент feed может получить только NetworkError.
         // В случае изменения логики в UseCase или Repository, изменить обработку ошибок.
+        
+        if photos.isEmpty {
+            feedStateSubject.send(.empty(
+                title: "Something went wrong",
+                subtitle: "Unable to load photos"
+            ))
+            return
+        }
+        
+        if currentError?.localizedDescription == error.localizedDescription {
+            return
+        }
+        
+        currentError = error
+        
         guard let networkError = error as? NetworkError else { return }
         
+        let banner: Banner
+        if case .clientError(let code) = networkError, code == 403 {
+            banner = Banner(
+                title: "The request limit has been reached",
+                subtitle: "Requests are updated at the beginning of each hour",
+                type: .error
+            )
+        } else {
+            banner = Banner(
+                title: "Network error",
+                subtitle: "Please check your connection",
+                type: .error
+            )
+        }
+        
+        if let bannerPresenter {
+            DispatchQueue.main.async {
+                bannerPresenter.presentBanner(banner)
+            }
+        } else {
+            bannerSubject.send(banner)
+        }
     }
 }

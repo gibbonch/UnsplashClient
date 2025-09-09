@@ -21,7 +21,7 @@ class BannerQueue {
         isShowingBanner = true
         
         let bannerView = BannerView()
-        bannerView.present(in: viewController, with: banner) { [weak self] in
+        bannerView.present(in: viewController.navigationController ?? viewController, with: banner) { [weak self] in
             self?.isShowingBanner = false
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                 self?.processQueue()

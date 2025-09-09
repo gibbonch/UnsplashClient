@@ -1,6 +1,8 @@
 import UIKit
 import Kingfisher
 
+// MARK: - Model
+
 final class FeedPhotoCell: UICollectionViewCell {
     
     // MARK: - Static Properties
@@ -101,8 +103,8 @@ extension FeedPhotoCell: Themeable {
     
     func applyTheme() {
         if shouldApplyTheme {
-            authorView.avatarImageView.backgroundColor = Colors.gray
-            photoImageView.backgroundColor = Colors.gray
+            authorView.avatarImageView.backgroundColor = Colors.lightGray
+            photoImageView.backgroundColor = Colors.lightGray
         }
     }
 }

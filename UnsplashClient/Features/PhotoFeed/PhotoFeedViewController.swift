@@ -10,6 +10,22 @@ final class PhotoFeedViewController: UIViewController, BannerPresenting {
     
     private var dataSource: DataSource?
     
+    private lazy var placeholderView: PlaceholderView = {
+        let view = PlaceholderView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
+    private lazy var retryButton: UIButton = {
+        let button = UIButton()
+        button.addTarget(self, action: #selector(retryButtonTapped), for: .touchUpInside)
+        button.setTitle("Retry photos upload", for: .normal)
+        button.titleLabel?.font = Typography.bodySmall
+        button.layer.cornerRadius = 17
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
     private lazy var collectionView: UICollectionView = {
         let layout = WaterfallLayout()
         layout.delegate = self
@@ -54,11 +70,21 @@ final class PhotoFeedViewController: UIViewController, BannerPresenting {
     // MARK: - Private Methods
     
     private func setupUI() {
+        view.addSubview(placeholderView)
+        view.addSubview(retryButton)
         view.addSubview(collectionView)
     }
     
     private func setupConstraints() {
         NSLayoutConstraint.activate([
+            placeholderView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            placeholderView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            
+            retryButton.topAnchor.constraint(equalTo: placeholderView.bottomAnchor, constant: 16),
+            retryButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            retryButton.heightAnchor.constraint(equalToConstant: 34),
+            retryButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 180),
+            
             collectionView.topAnchor.constraint(equalTo: view.topAnchor),
             collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
@@ -85,9 +111,32 @@ final class PhotoFeedViewController: UIViewController, BannerPresenting {
     }
     
     private func bindViewModel() {
-        viewModel.feedPhotos.sink { [weak self] photos in
-            self?.applySnapshot(photos: photos)
+        viewModel.feedState.sink { [weak self] state in
+            self?.updateState(with: state)
         }.store(in: &cancellables)
+        
+        viewModel.banner.sink { [weak self] banner in
+            self?.showBanner(banner)
+        }.store(in: &cancellables)
+    }
+    
+    private func updateState(with state: PhotoFeedState) {
+        switch state {
+        case .initial:
+            placeholderView.isHidden = true
+            retryButton.isHidden = true
+            collectionView.isHidden = true
+        case .empty(title: let title, subtitle: let subtitle):
+            placeholderView.configure(title: title, subtitle: subtitle)
+            placeholderView.isHidden = false
+            retryButton.isHidden = false
+            collectionView.isHidden = true
+        case .photos(let models):
+            applySnapshot(photos: models)
+            placeholderView.isHidden = true
+            retryButton.isHidden = true
+            collectionView.isHidden = false
+        }
     }
     
     private func applySnapshot(photos: [FeedPhotoModel]) {
@@ -109,6 +158,11 @@ final class PhotoFeedViewController: UIViewController, BannerPresenting {
         
         return CGSize(width: imageWidth, height: CGFloat(resolution.height) * scale)
     }
+    
+    @objc
+    private func retryButtonTapped() {
+        viewModel.retryButtonTapped()
+    }
 }
 
 // MARK: - UICollectionViewDelegate
@@ -116,7 +170,7 @@ final class PhotoFeedViewController: UIViewController, BannerPresenting {
 extension PhotoFeedViewController: UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        
+        viewModel.cellSelected(at: indexPath)
     }
     
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
@@ -142,6 +196,8 @@ extension PhotoFeedViewController: Themeable {
     
     func applyTheme() {
         view.backgroundColor = Colors.backgroundPrimary
+        retryButton.backgroundColor = Colors.backgroundAccent
+        retryButton.setTitleColor(Colors.textAccent, for: .normal)
     }
 }
 

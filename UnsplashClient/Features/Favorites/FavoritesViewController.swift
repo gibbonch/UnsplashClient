@@ -2,6 +2,16 @@ import UIKit
 
 final class FavoritesViewController: UIViewController {
     
+    private lazy var placeholderView: PlaceholderView = {
+        let view = PlaceholderView()
+        view.configure(
+            title: "Nothing here yet",
+            subtitle: "Add your favorite photos to your favorites"
+        )
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
     init() {
         super.init(nibName: nil, bundle: nil)
         ThemeManager.shared.register(self)
@@ -19,6 +29,19 @@ final class FavoritesViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.title = "Favorites"
+        setupUI()
+        setupConstraints()
+    }
+    
+    private func setupUI() {
+        view.addSubview(placeholderView)
+    }
+    
+    private func setupConstraints() {
+        NSLayoutConstraint.activate([
+            placeholderView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            placeholderView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+        ])
     }
 }
 

@@ -4,7 +4,7 @@ protocol HideKeyboardResponder: AnyObject {
     func hideKeyboard()
 }
 
-final class HomeViewController: UIViewController {
+final class HomeViewController: UIViewController, BannerPresenting {
     
     private let viewModel: HomeViewModelProtocol
     
@@ -79,5 +79,14 @@ extension HomeViewController: HideKeyboardResponder {
     
     func hideKeyboard() {
         searchController.searchBar.endEditing(true)
+    }
+}
+
+// MARK: - BannerPresenter
+
+extension HomeViewController: BannerPresenter {
+    
+    func presentBanner(_ banner: Banner) {
+        showBanner(banner)
     }
 }

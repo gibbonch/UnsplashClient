@@ -26,16 +26,21 @@ final class HomeCoordinator: CoordinatorProtocol {
         showPhotosFeed()
     }
     
-    private func showPhotosFeed(with query: SearchQuery? = nil) {
+    private func showPhotosFeed() {
         let useCase = diContainer.resolve(FetchPhotosUseCaseProtocol.self)!
         let viewModel = PhotoFeedViewModel(fetchPhotosUseCase: useCase)
         viewModel.responder = self
+        viewModel.bannerPresenter = homeViewController
         let photoFeedViewController = PhotoFeedViewController(viewModel: viewModel)
         
         homeViewController.addChild(photoFeedViewController)
         homeViewController.view.addSubview(photoFeedViewController.view)
         photoFeedViewController.view.frame = homeViewController.view.frame
         photoFeedViewController.didMove(toParent: homeViewController)
+    }
+    
+    private func showSearchResults(for query: SearchQuery) {
+        
     }
     
     private func showPhotoDetail() {
