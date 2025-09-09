@@ -13,11 +13,13 @@ protocol BannerPresenter: AnyObject {
 protocol PhotoFeedViewModelProtocol {
     var feedState: AnyPublisher<PhotoFeedState, Never> { get }
     var banner: AnyPublisher<Banner, Never> { get }
+    var isRefreshing: AnyPublisher<Bool, Never> { get }
     
     func viewLoaded()
     func cellSelected(at indexPath: IndexPath)
     func willDisplayCell(at indexPath: IndexPath)
     func retryButtonTapped()
+    func refreshFeed()
     
     func photoResolution(at indexPath: IndexPath) -> Photo.Resolution
 }
@@ -41,6 +43,12 @@ final class PhotoFeedViewModel: PhotoFeedViewModelProtocol {
             .eraseToAnyPublisher()
     }
     
+    var isRefreshing: AnyPublisher<Bool, Never> {
+        refreshSubject
+            .receive(on: DispatchQueue.main)
+            .eraseToAnyPublisher()
+    }
+    
     // MARK: - Private Properties
     
     private var photos: [Photo] = []
@@ -50,6 +58,7 @@ final class PhotoFeedViewModel: PhotoFeedViewModelProtocol {
     
     private let feedStateSubject = CurrentValueSubject<PhotoFeedState, Never>(.initial)
     private let bannerSubject = PassthroughSubject<Banner, Never>()
+    private let refreshSubject = CurrentValueSubject<Bool, Never>(false)
     
     private var page: Int = 1
     private let perPage: Int = 20
@@ -68,9 +77,7 @@ final class PhotoFeedViewModel: PhotoFeedViewModelProtocol {
     // MARK: - Public Methods
     
     func viewLoaded() {
-        if !isFetching {
-            fetchPhotos()
-        }
+        fetchPhotos()
     }
     
     func cellSelected(at indexPath: IndexPath) {
@@ -88,6 +95,14 @@ final class PhotoFeedViewModel: PhotoFeedViewModelProtocol {
     }
     
     func retryButtonTapped() {
+        if !isFetching {
+            fetchPhotos()
+        }
+    }
+    
+    func refreshFeed() {
+        refreshSubject.send(true)
+        fetchPhotosUseCase.cancelCurrentTask()
         fetchPhotos()
     }
     
@@ -107,8 +122,14 @@ final class PhotoFeedViewModel: PhotoFeedViewModelProtocol {
                 let existingIDs = Set(photos.map { $0.id })
                 let uniqueNewPhotos = newPhotos.filter { !existingIDs.contains($0.id) }
                 
-                photos += uniqueNewPhotos
+                if refreshSubject.value {
+                    photos = uniqueNewPhotos
+                } else {
+                    photos += uniqueNewPhotos
+                }
+                
                 page += 1
+                
                 processPhotos()
                 currentError = nil
                 
@@ -117,6 +138,7 @@ final class PhotoFeedViewModel: PhotoFeedViewModelProtocol {
             }
             
             isFetching = false
+            refreshSubject.send(false)
             
             if isInitialLoading {
                 DispatchQueue.main.async {
@@ -161,6 +183,11 @@ final class PhotoFeedViewModel: PhotoFeedViewModelProtocol {
         currentError = error
         
         guard let networkError = error as? NetworkError else { return }
+        
+        if case .cancelled = networkError {
+            currentError = nil
+            return
+        }
         
         let banner: Banner
         if case .clientError(let code) = networkError, code == 403 {

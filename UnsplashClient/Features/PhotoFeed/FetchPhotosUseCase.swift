@@ -2,6 +2,7 @@ import Foundation
 
 protocol FetchPhotosUseCaseProtocol {
     func execute(page: Int, perPage: Int, with query: SearchQuery?, completion: @escaping (Result<[Photo], Error>) -> Void)
+    func cancelCurrentTask()
 }
 
 final class FetchPhotosUseCase: FetchPhotosUseCaseProtocol {
@@ -17,6 +18,10 @@ final class FetchPhotosUseCase: FetchPhotosUseCaseProtocol {
         } else {
             fetchPhotos(page: page, perPage: perPage, completion: completion)
         }
+    }
+    
+    func cancelCurrentTask() {
+        photoRepository.cancelCurrentTask()
     }
     
     private func searchPhotos(query: SearchQuery, page: Int, perPage: Int, completion: @escaping (Result<[Photo], Error>) -> Void) {

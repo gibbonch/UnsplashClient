@@ -26,6 +26,12 @@ final class PhotoFeedViewController: UIViewController, BannerPresenting {
         return button
     }()
     
+    private lazy var refreshControl: UIRefreshControl = {
+        let control = UIRefreshControl()
+        control.addTarget(self, action: #selector(refresh), for: .primaryActionTriggered)
+        return control
+    }()
+    
     private lazy var collectionView: UICollectionView = {
         let layout = WaterfallLayout()
         layout.delegate = self
@@ -34,6 +40,7 @@ final class PhotoFeedViewController: UIViewController, BannerPresenting {
         collectionView.backgroundColor = .clear
         collectionView.showsVerticalScrollIndicator = false
         collectionView.contentInset = .init(top: 22, left: 16, bottom: 22, right: 16)
+        collectionView.refreshControl = refreshControl
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         return collectionView
     }()
@@ -118,6 +125,12 @@ final class PhotoFeedViewController: UIViewController, BannerPresenting {
         viewModel.banner.sink { [weak self] banner in
             self?.showBanner(banner)
         }.store(in: &cancellables)
+        
+        viewModel.isRefreshing.sink { [weak self] isRefreshing in
+            if !isRefreshing {
+                self?.refreshControl.endRefreshing()
+            }
+        }.store(in: &cancellables)
     }
     
     private func updateState(with state: PhotoFeedState) {
@@ -163,6 +176,11 @@ final class PhotoFeedViewController: UIViewController, BannerPresenting {
     private func retryButtonTapped() {
         viewModel.retryButtonTapped()
     }
+    
+    @objc
+    private func refresh() {
+        viewModel.refreshFeed()
+    }
 }
 
 // MARK: - UICollectionViewDelegate
@@ -198,6 +216,7 @@ extension PhotoFeedViewController: Themeable {
         view.backgroundColor = Colors.backgroundPrimary
         retryButton.backgroundColor = Colors.backgroundAccent
         retryButton.setTitleColor(Colors.textAccent, for: .normal)
+        refreshControl.tintColor = Colors.gray
     }
 }
 
