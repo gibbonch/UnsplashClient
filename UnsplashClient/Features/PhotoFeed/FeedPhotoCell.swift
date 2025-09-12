@@ -1,8 +1,6 @@
 import UIKit
 import Kingfisher
 
-// MARK: - Model
-
 final class FeedPhotoCell: UICollectionViewCell {
     
     // MARK: - Static Properties
@@ -51,9 +49,9 @@ final class FeedPhotoCell: UICollectionViewCell {
         super.prepareForReuse()
     }
     
-    // MARK: - Public Methods
+    // MARK: - Internal Methods
     
-    func configure(with sizedModel: SizedFeedPhotoModel) {
+    func configure(with sizedModel: SizedFeedPhotoCellModel) {
         ThemeManager.shared.register(self)
         
         let model = sizedModel.model

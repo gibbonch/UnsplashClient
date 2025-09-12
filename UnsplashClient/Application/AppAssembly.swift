@@ -7,6 +7,7 @@ final class AppAssembly: AssemblyProtocol {
         diContainer.register(for: NetworkClientProtocol.self, networkClient)
         diContainer.register(for: ContextProvider.self, CoreDataStack())
         diContainer.register(for: PhotoRepositoryProtocol.self, PhotoRepository(client: networkClient))
+        diContainer.register(for: SearchRepositoryProtocol.self, SearchRepository(client: networkClient))
     }
     
     private func createNetworkClient() -> NetworkClientProtocol {

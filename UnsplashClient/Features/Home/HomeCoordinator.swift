@@ -8,6 +8,8 @@ final class HomeCoordinator: CoordinatorProtocol {
     private let diContainer: DIContainerProtocol
     
     private let homeViewController: HomeViewController
+    private let homeViewModel: HomeViewModel
+    
     private var searchViewController: UIViewController?
     
     private var isSearching = false
@@ -16,7 +18,7 @@ final class HomeCoordinator: CoordinatorProtocol {
         self.navigationController = navigationController
         self.diContainer = diContainer
         
-        let homeViewModel = HomeViewModel()
+        homeViewModel = HomeViewModel()
         homeViewController = HomeViewController(viewModel: homeViewModel)
         homeViewModel.responder = self
     }
@@ -50,8 +52,21 @@ final class HomeCoordinator: CoordinatorProtocol {
     private func showSearch() {
         guard !isSearching else { return }
         
-        let searchViewController = SearchViewController()
+        let searchRepository = diContainer.resolve(SearchRepositoryProtocol.self)!
+        let contextProvider = diContainer.resolve(ContextProvider.self)!
+        let recentQueriesRepository = RecentQueriesRepository(contextProvider: contextProvider)
+        
+        let viewModel = SearchViewModel(
+            searchRepository: searchRepository,
+            recentQueriesRepository: recentQueriesRepository
+        )
+        viewModel.bannerPresenter = homeViewController
+        
+        let searchViewController = SearchViewController(viewModel: viewModel)
         searchViewController.hideKeyboardResponder = homeViewController
+        
+        homeViewModel.searchDelegate = viewModel
+        
         homeViewController.addChild(searchViewController)
         homeViewController.view.addSubview(searchViewController.view)
         searchViewController.view.frame = homeViewController.view.frame
@@ -62,6 +77,7 @@ final class HomeCoordinator: CoordinatorProtocol {
     }
     
     private func stopSearch() {
+        homeViewModel.searchDelegate = nil
         searchViewController?.willMove(toParent: nil)
         searchViewController?.removeFromParent()
         searchViewController?.view.removeFromSuperview()

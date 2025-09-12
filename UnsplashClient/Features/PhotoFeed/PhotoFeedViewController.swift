@@ -100,8 +100,8 @@ final class PhotoFeedViewController: UIViewController, BannerPresenting {
     }
     
     private func setupDataSource() {
-        let registration = UICollectionView.CellRegistration<FeedPhotoCell, FeedPhotoModel> { [weak self] cell, indexPath, model in
-            let sizedModel = SizedFeedPhotoModel(
+        let registration = UICollectionView.CellRegistration<FeedPhotoCell, FeedPhotoCellModel> { [weak self] cell, indexPath, model in
+            let sizedModel = SizedFeedPhotoCellModel(
                 model: model,
                 imageSize: self?.calculateImageSizeForCell(at: indexPath) ?? .zero
             )
@@ -152,7 +152,7 @@ final class PhotoFeedViewController: UIViewController, BannerPresenting {
         }
     }
     
-    private func applySnapshot(photos: [FeedPhotoModel]) {
+    private func applySnapshot(photos: [FeedPhotoCellModel]) {
         var snapshot = Snapshot()
         snapshot.appendSections([.main])
         snapshot.appendItems(photos, toSection: .main)
@@ -228,5 +228,5 @@ private enum Section {
 
 // MARK: - Type Aliases
 
-private typealias DataSource = UICollectionViewDiffableDataSource<Section, FeedPhotoModel>
-private typealias Snapshot = NSDiffableDataSourceSnapshot<Section, FeedPhotoModel>
+private typealias DataSource = UICollectionViewDiffableDataSource<Section, FeedPhotoCellModel>
+private typealias Snapshot = NSDiffableDataSourceSnapshot<Section, FeedPhotoCellModel>

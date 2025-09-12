@@ -1,6 +1,6 @@
 import Foundation
 
-struct FeedPhotoModel {
+struct FeedPhotoCellModel {
     let id: String
     let avatar: URL
     let username: String
@@ -8,9 +8,9 @@ struct FeedPhotoModel {
     let hex: String
 }
 
-extension FeedPhotoModel: Hashable {
+extension FeedPhotoCellModel: Hashable {
     
-    static func == (lhs: FeedPhotoModel, rhs: FeedPhotoModel) -> Bool {
+    static func == (lhs: FeedPhotoCellModel, rhs: FeedPhotoCellModel) -> Bool {
         lhs.id == rhs.id
     }
     
@@ -19,7 +19,7 @@ extension FeedPhotoModel: Hashable {
     }
 }
 
-struct SizedFeedPhotoModel {
-    let model: FeedPhotoModel
+struct SizedFeedPhotoCellModel {
+    let model: FeedPhotoCellModel
     let imageSize: CGSize
 }

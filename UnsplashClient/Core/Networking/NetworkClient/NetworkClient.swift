@@ -42,7 +42,7 @@ final class NetworkClient: NetworkClientProtocol {
         self.middlewareChain = middlewareChain
     }
     
-    // MARK: - Public Methods
+    // MARK: - Internal Methods
     
     @discardableResult
     func request<T: Endpoint>(endpoint: T, completion: @escaping (Result<T.Response, NetworkError>) -> Void) -> CancellableTask? {

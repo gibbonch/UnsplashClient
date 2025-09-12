@@ -4,7 +4,7 @@ import CoreData
 final class CoreDataStack: ContextProvider {
     
     private lazy var persistentContainer: NSPersistentContainer = {
-        let container = NSPersistentContainer(name: "UnsplashClientDataModel")
+        let container = NSPersistentContainer(name: "UnsplashDataModel")
         
         container.loadPersistentStores { _, error in
             if let error = error as NSError? {

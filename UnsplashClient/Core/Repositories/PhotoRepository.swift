@@ -1,24 +1,21 @@
 import Foundation
 
 protocol PhotoRepositoryProtocol {
-    func fetchPhotos(page: Int, perPage: Int, completion: @escaping (Result<[Photo], Error>) -> Void)
-    func fetchPhotos(query: SearchQuery, page: Int, perPage: Int, completion: @escaping (Result<[Photo], Error>) -> Void)
-    func fetchPhoto(id: String, completion: @escaping (Result<Photo, Error>) -> Void)
-    func cancelCurrentTask()
+    func fetchPhotos(page: Int, perPage: Int, completion: @escaping (Result<[Photo], Error>) -> Void) -> CancellableTask?
+    func fetchPhoto(id: String, completion: @escaping (Result<Photo, Error>) -> Void) -> CancellableTask?
 }
 
 final class PhotoRepository: PhotoRepositoryProtocol {
     
     private let client: NetworkClientProtocol
-    private var currentTask: CancellableTask?
     
     init(client: NetworkClientProtocol) {
         self.client = client
     }
     
-    func fetchPhotos(page: Int, perPage: Int, completion: @escaping (Result<[Photo], Error>) -> Void) {
+    func fetchPhotos(page: Int, perPage: Int, completion: @escaping (Result<[Photo], Error>) -> Void) -> CancellableTask? {
         let endpoint = GetPhotosEndpoint(page: page, perPage: perPage)
-        currentTask = client.request(endpoint: endpoint) { result in
+        let task = client.request(endpoint: endpoint) { result in
             switch result {
             case .success(let photoDTOs):
                 let photos = photoDTOs.compactMap { Photo(dto: $0) }
@@ -27,13 +24,12 @@ final class PhotoRepository: PhotoRepositoryProtocol {
                 completion(.failure(error))
             }
         }
+        return task
     }
     
-    func fetchPhotos(query: SearchQuery, page: Int, perPage: Int, completion: @escaping (Result<[Photo], Error>) -> Void) { }
-    
-    func fetchPhoto(id: String, completion: @escaping (Result<Photo, Error>) -> Void) {
+    func fetchPhoto(id: String, completion: @escaping (Result<Photo, Error>) -> Void) -> CancellableTask? {
         let endpoint = GetPhotoEndpoint(id: id)
-        currentTask = client.request(endpoint: endpoint) { result in
+        let task = client.request(endpoint: endpoint) { result in
             switch result {
             case .success(let photoDTO):
                 if let photo = Photo(dto: photoDTO) {
@@ -46,10 +42,7 @@ final class PhotoRepository: PhotoRepositoryProtocol {
                 completion(.failure(error))
             }
         }
-    }
-    
-    func cancelCurrentTask() {
-        currentTask?.cancel()
-        currentTask = nil
+        
+        return task
     }
 }

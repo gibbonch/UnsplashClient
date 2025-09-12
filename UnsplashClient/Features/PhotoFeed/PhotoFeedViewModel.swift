@@ -26,7 +26,7 @@ protocol PhotoFeedViewModelProtocol {
 
 final class PhotoFeedViewModel: PhotoFeedViewModelProtocol {
     
-    // MARK: - Public Properties
+    // MARK: - Internal Properties
     
     weak var responder: PhotoFeedNavigationResponder?
     weak var bannerPresenter: BannerPresenter?
@@ -63,6 +63,7 @@ final class PhotoFeedViewModel: PhotoFeedViewModelProtocol {
     private var page: Int = 1
     private let perPage: Int = 20
     private var isFetching = false
+    private var currentTask: CancellableTask?
     private var isInitialLoading = true
     
     private var currentError: Error?
@@ -74,7 +75,7 @@ final class PhotoFeedViewModel: PhotoFeedViewModelProtocol {
         self.searchQuery = searchQuery
     }
     
-    // MARK: - Public Methods
+    // MARK: - Internal Methods
     
     func viewLoaded() {
         fetchPhotos()
@@ -95,14 +96,14 @@ final class PhotoFeedViewModel: PhotoFeedViewModelProtocol {
     }
     
     func retryButtonTapped() {
-        if !isFetching {
-            fetchPhotos()
-        }
+        currentTask?.cancel()
+        fetchPhotos()
     }
     
     func refreshFeed() {
         refreshSubject.send(true)
-        fetchPhotosUseCase.cancelCurrentTask()
+        currentTask?.cancel()
+        currentTask = nil
         fetchPhotos()
     }
     
@@ -114,7 +115,7 @@ final class PhotoFeedViewModel: PhotoFeedViewModelProtocol {
     
     private func fetchPhotos() {
         isFetching = true
-        fetchPhotosUseCase.execute(page: page, perPage: perPage, with: searchQuery) { [weak self] result in
+        currentTask = fetchPhotosUseCase.execute(page: page, perPage: perPage, with: searchQuery) { [weak self] result in
             guard let self else { return }
             
             switch result {
@@ -154,8 +155,8 @@ final class PhotoFeedViewModel: PhotoFeedViewModelProtocol {
         feedStateSubject.send(.photos(feedPhotoModels))
     }
     
-    private func mapPhoto(_ photo: Photo) -> FeedPhotoModel {
-        FeedPhotoModel(
+    private func mapPhoto(_ photo: Photo) -> FeedPhotoCellModel {
+        FeedPhotoCellModel(
             id: photo.id,
             avatar: photo.author.profileImage.small,
             username: "@\(photo.author.nickname)",
