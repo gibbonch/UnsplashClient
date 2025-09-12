@@ -90,3 +90,13 @@ extension HomeViewController: BannerPresenter {
         showBanner(banner)
     }
 }
+
+// MARK: - SearchBarOwner
+
+extension HomeViewController: SearchBarOwner {
+    
+    func setText(_ text: String) {
+        searchController.searchBar.text = text
+        hideKeyboard()
+    }
+}

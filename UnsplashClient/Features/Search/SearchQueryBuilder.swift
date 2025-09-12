@@ -14,6 +14,7 @@ final class SearchQueryBuilder {
         [
             .orderedBy: OrderedByFilter.newest,
             .orientation: OrientationFilter.any,
+            .color: ColorFilter.any,
         ]
     }
     

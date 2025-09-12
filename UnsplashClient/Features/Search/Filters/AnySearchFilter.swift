@@ -16,7 +16,8 @@ struct AnySearchFilter: SearchFilter, Hashable {
     }
     
     func hash(into hasher: inout Hasher) {
-        hasher.combine(hashValue)
+        hasher.combine(type)
+        hasher.combine(value)
     }
 }
 

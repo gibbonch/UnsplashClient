@@ -14,4 +14,5 @@ protocol SearchFilter: Hashable {
 enum FilterType: String, CaseIterable {
     case orderedBy = "order_by"
     case orientation
+    case color
 }

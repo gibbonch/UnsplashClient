@@ -5,9 +5,13 @@ protocol SearchNavigationResponder: AnyObject {
     func routeToSearchResults(with query: SearchQuery)
 }
 
+protocol SearchBarOwner: AnyObject {
+    func setText(_ text: String)
+}
+
 protocol SearchViewModelProtocol {
     var recentQueries: AnyPublisher<[RecentQueryCellModel], Never> { get }
-    var filterSections: AnyPublisher<[SearchFilterGroup], Never> { get }
+    var filterSections: AnyPublisher<[FilterGroup], Never> { get }
     var searchButtonState: AnyPublisher<SearchButtonState, Never> { get }
     
     func didSelectRecentQuery(with id: String)
@@ -22,8 +26,9 @@ final class SearchViewModel: SearchViewModelProtocol {
     
     weak var responder: SearchNavigationResponder?
     weak var bannerPresenter: BannerPresenter?
+    weak var searchBarOwner: SearchBarOwner?
     
-    var filterSections: AnyPublisher<[SearchFilterGroup], Never> {
+    var filterSections: AnyPublisher<[FilterGroup], Never> {
         filterGroupsSubject
             .receive(on: DispatchQueue.main)
             .eraseToAnyPublisher()
@@ -48,11 +53,13 @@ final class SearchViewModel: SearchViewModelProtocol {
     
     // MARK: - Private Properties
     
-    private let searchQueryBuilder = SearchQueryBuilder()
     private let searchRepository: SearchRepositoryProtocol
     private let recentQueriesRepository: RecentQueriesRepositoryProtocol
     
-    private let filterGroupsSubject = CurrentValueSubject<[SearchFilterGroup], Never>([])
+    private let searchQueryBuilder = SearchQueryBuilder()
+    private let filterGroupsBuilder = FilterGroupsBuilder()
+    
+    private let filterGroupsSubject = CurrentValueSubject<[FilterGroup], Never>([])
     private let recentQueriesSubject = CurrentValueSubject<[RecentQuery], Never>([])
     private let searchButtonStateSubject = CurrentValueSubject<SearchButtonState, Never>(.hidden)
     
@@ -64,11 +71,6 @@ final class SearchViewModel: SearchViewModelProtocol {
     private var searchTask: CancellableTask? {
         willSet { searchTask?.cancel() }
     }
-    
-    private let availableFilters: [FilterType: [AnySearchFilter]] = [
-        .orderedBy: OrderedByFilter.allCases.map { $0.eraseToAnySearchFilter() },
-        .orientation: OrientationFilter.allCases.map { $0.eraseToAnySearchFilter() },
-    ]
     
     // MARK: - Lifecycle
     
@@ -95,6 +97,8 @@ final class SearchViewModel: SearchViewModelProtocol {
         searchQueryBuilder.query(query)
         
         enqueueSearchQuery(query)
+        
+        searchBarOwner?.setText(query.text)
         buildSearchFilterGroups(query: query)
         
         responder?.routeToSearchResults(with: query)
@@ -123,20 +127,7 @@ final class SearchViewModel: SearchViewModelProtocol {
     // MARK: - Private Methods
     
     private func buildSearchFilterGroups(query: SearchQuery) {
-        var groups: [SearchFilterGroup] = []
-        
-        for type in FilterType.allCases {
-            let filters = availableFilters[type] ?? []
-            let models = filters.map { filter in
-                let isSelected = query.filters.contains { queryFilter in
-                    queryFilter.type == filter.type && queryFilter.value == filter.value
-                }
-                return FilterCellModel(filter: filter, isSelected: isSelected)
-            }
-            let group = SearchFilterGroup(type: type, filterModels: models)
-            groups.append(group)
-        }
-        
+        let groups = filterGroupsBuilder.buildFilterGroups(for: query)
         filterGroupsSubject.send(groups)
     }
     
@@ -150,6 +141,15 @@ final class SearchViewModel: SearchViewModelProtocol {
             .debounce(for: .seconds(0.5), scheduler: DispatchQueue.main)
             .sink { [weak self] query in
                 self?.searchPhotos(query: query)
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func observeRecentQueries() {
+        recentQueriesRepository
+            .observeRecents()
+            .sink { [weak self] recentQueries in
+                self?.recentQueriesSubject.send(recentQueries)
             }
             .store(in: &cancellables)
     }
@@ -207,15 +207,6 @@ final class SearchViewModel: SearchViewModelProtocol {
         
         searchButtonStateSubject.send(.hidden)
     }
-    
-    private func observeRecentQueries() {
-        recentQueriesRepository
-            .observeRecents()
-            .sink { [weak self] recentQueries in
-                self?.recentQueriesSubject.send(recentQueries)
-            }
-            .store(in: &cancellables)
-    }
 }
 
 // MARK: - SearchQueryDelegate
@@ -231,11 +222,4 @@ extension SearchViewModel: SearchQueryDelegate {
     func didSubmitSearchQuery() {
         searchButtonDidTap()
     }
-}
-
-// MARK: - SearchFilterGroup
-
-struct SearchFilterGroup {
-    let type: FilterType
-    let filterModels: [FilterCellModel]
 }

@@ -26,7 +26,7 @@ final class SearchRepository: SearchRepositoryProtocol {
         perPage: Int,
         completion: @escaping (Result<PhotosSearchResult, Error>) -> Void
     ) -> CancellableTask? {
-        let endpoint = SearchPhotosEndpoint(searchQuery: query)
+        let endpoint = SearchPhotosEndpoint(searchQuery: query, page: page, perPage: perPage)
         let task = client.request(endpoint: endpoint) { result in
             switch result {
             case .success(let dto):

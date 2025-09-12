@@ -57,6 +57,13 @@ public class RecentQueryDTO: NSManagedObject {
                     return OrientationFilter.any
                 }
                 return OrientationFilter.allCases.first { $0.value == actualValue }
+            case .color:
+                let actualValue = filterData.value == "nil" ? nil : filterData.value
+                
+                if actualValue == nil {
+                    return ColorFilter.any
+                }
+                return ColorFilter.allCases.first { $0.value == actualValue }
             }
         }
         

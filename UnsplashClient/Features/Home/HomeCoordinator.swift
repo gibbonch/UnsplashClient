@@ -42,7 +42,13 @@ final class HomeCoordinator: CoordinatorProtocol {
     }
     
     private func showSearchResults(for query: SearchQuery) {
-        
+        let useCase = diContainer.resolve(FetchPhotosUseCaseProtocol.self)!
+        let viewModel = PhotoFeedViewModel(fetchPhotosUseCase: useCase, searchQuery: query)
+        viewModel.responder = self
+        viewModel.bannerPresenter = homeViewController
+        let photoFeedViewController = PhotoFeedViewController(viewModel: viewModel)
+        photoFeedViewController.navigationItem.title = query.text
+        navigationController.pushViewController(photoFeedViewController, animated: true)
     }
     
     private func showPhotoDetail() {
@@ -61,6 +67,8 @@ final class HomeCoordinator: CoordinatorProtocol {
             recentQueriesRepository: recentQueriesRepository
         )
         viewModel.bannerPresenter = homeViewController
+        viewModel.searchBarOwner = homeViewController
+        viewModel.responder = self
         
         let searchViewController = SearchViewController(viewModel: viewModel)
         searchViewController.hideKeyboardResponder = homeViewController
@@ -107,5 +115,14 @@ extension HomeCoordinator: PhotoFeedNavigationResponder {
     
     func preparingFinished() {
         onFinishPrepare?()
+    }
+}
+
+// MARK: - SearchNavigationResponder
+
+extension HomeCoordinator: SearchNavigationResponder {
+    
+    func routeToSearchResults(with query: SearchQuery) {
+        showSearchResults(for: query)
     }
 }

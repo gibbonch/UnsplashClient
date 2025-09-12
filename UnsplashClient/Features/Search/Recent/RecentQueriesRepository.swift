@@ -19,6 +19,7 @@ final class RecentQueriesRepository: NSObject, RecentQueriesRepositoryProtocol {
         self.contextProvider = contextProvider
         super.init()
         setupSearchResultsController()
+        performInitialFetch()
     }
     
     func createRecentQuery(query: SearchQuery) {
@@ -43,11 +44,6 @@ final class RecentQueriesRepository: NSObject, RecentQueriesRepositoryProtocol {
     }
     
     func observeRecents() -> AnyPublisher<[RecentQuery], Never> {
-        do {
-            try fetchedResultsController?.performFetch()
-        } catch {
-            recentsSubject.send([])
-        }
         return recentsSubject.eraseToAnyPublisher()
     }
     
@@ -76,6 +72,32 @@ final class RecentQueriesRepository: NSObject, RecentQueriesRepositoryProtocol {
         fetchedResultsController?.delegate = self
     }
     
+    private func performInitialFetch() {
+        do {
+            try fetchedResultsController?.performFetch()
+            updateRecentsSubject()
+        } catch {
+            recentsSubject.send([])
+        }
+    }
+    
+    private func updateRecentsSubject() {
+        guard let dtos = fetchedResultsController?.fetchedObjects else {
+            recentsSubject.send([])
+            return
+        }
+        
+        let recents = dtos.compactMap { dto -> RecentQuery? in
+            guard let identifier = dto.identifier,
+                  let timestamp = dto.timestamp,
+                  let query = dto.mapToDomain()
+            else { return nil }
+            
+            return RecentQuery(identifier: identifier, timestamp: timestamp, query: query)
+        }
+        recentsSubject.send(recents)
+    }
+    
     private func saveContext(_ context: NSManagedObjectContext) {
         do {
             try context.save()
@@ -90,18 +112,6 @@ final class RecentQueriesRepository: NSObject, RecentQueriesRepositoryProtocol {
 extension RecentQueriesRepository: NSFetchedResultsControllerDelegate {
     
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<any NSFetchRequestResult>) {
-        guard let dtos = controller.fetchedObjects as? [RecentQueryDTO] else {
-            return
-        }
-        
-        let recents = dtos.compactMap { dto -> RecentQuery? in
-            guard let identifier = dto.identifier,
-                  let timestamp = dto.timestamp,
-                  let query = dto.mapToDomain()
-            else { return nil }
-            
-            return RecentQuery(identifier: identifier, timestamp: timestamp, query: query)
-        }
-        recentsSubject.send(recents)
+        updateRecentsSubject()
     }
 }
