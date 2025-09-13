@@ -24,8 +24,7 @@ final class RecentQueriesRepository: NSObject, RecentQueriesRepositoryProtocol {
     
     func createRecentQuery(query: SearchQuery) {
         let context = contextProvider.viewContext
-        let dto = RecentQueryDTO(query: query, context: context)
-        dto.timestamp = Date()
+        RecentQueryDTO(query: query, context: context)
         saveContext(context)
     }
     

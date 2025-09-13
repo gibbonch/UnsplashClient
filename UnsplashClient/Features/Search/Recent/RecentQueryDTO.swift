@@ -19,6 +19,7 @@ public class RecentQueryDTO: NSManagedObject {
     @NSManaged public var timestamp: Date?
     @NSManaged public var filtersData: Data?
     
+    @discardableResult
     convenience init(query: SearchQuery, context: NSManagedObjectContext) {
         self.init(context: context)
         identifier = UUID().uuidString

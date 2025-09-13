@@ -26,7 +26,13 @@ struct Photo {
 
 typealias Hex = String
 
-struct PhotoWithLikeStatus {
+struct DetailedPhoto {
     let photo: Photo
     let isLiked: Bool
+    let source: PhotoSource
+}
+
+enum PhotoSource {
+    case remote
+    case local(URL)
 }

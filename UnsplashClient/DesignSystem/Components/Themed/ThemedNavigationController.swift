@@ -7,6 +7,11 @@ final class ThemedNavigationController: UINavigationController, Themeable {
         ThemeManager.shared.register(self)
     }
     
+    override func pushViewController(_ viewController: UIViewController, animated: Bool) {
+        topViewController?.navigationItem.backButtonTitle = ""
+        super.pushViewController(viewController, animated: animated)
+    }
+    
     func applyTheme() {
         let appearance = UINavigationBarAppearance()
         appearance.configureWithDefaultBackground()

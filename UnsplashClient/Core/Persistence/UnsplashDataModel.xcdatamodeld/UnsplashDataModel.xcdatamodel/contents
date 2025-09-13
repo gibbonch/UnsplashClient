@@ -1,5 +1,30 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23788.4" systemVersion="24G90" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
+    <entity name="DetailedPhotoDTO" representedClassName="DetailedPhotoDTO" syncable="YES">
+        <attribute name="color" attributeType="String"/>
+        <attribute name="createdAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="full" attributeType="String"/>
+        <attribute name="height" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="identifier" attributeType="String"/>
+        <attribute name="photoDescription" optional="YES" attributeType="String"/>
+        <attribute name="raw" attributeType="String"/>
+        <attribute name="regular" attributeType="String"/>
+        <attribute name="small" attributeType="String"/>
+        <attribute name="thumb" attributeType="String"/>
+        <attribute name="timestamp" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="width" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="author" maxCount="1" deletionRule="Nullify" destinationEntity="PhotoAuthorDTO" inverseName="photos" inverseEntity="PhotoAuthorDTO"/>
+    </entity>
+    <entity name="PhotoAuthorDTO" representedClassName="PhotoAuthorDTO" syncable="YES">
+        <attribute name="firstName" optional="YES" attributeType="String"/>
+        <attribute name="identifier" attributeType="String"/>
+        <attribute name="large" attributeType="String"/>
+        <attribute name="lastName" optional="YES" attributeType="String"/>
+        <attribute name="medium" attributeType="String"/>
+        <attribute name="nickname" attributeType="String"/>
+        <attribute name="small" attributeType="String"/>
+        <relationship name="photos" toMany="YES" deletionRule="Cascade" destinationEntity="DetailedPhotoDTO" inverseName="author" inverseEntity="DetailedPhotoDTO"/>
+    </entity>
     <entity name="RecentQueryDTO" representedClassName="RecentQueryDTO" syncable="YES">
         <attribute name="filtersData" attributeType="Binary"/>
         <attribute name="identifier" optional="YES" attributeType="String"/>

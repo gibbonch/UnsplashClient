@@ -51,8 +51,9 @@ final class HomeCoordinator: CoordinatorProtocol {
         navigationController.pushViewController(photoFeedViewController, animated: true)
     }
     
-    private func showPhotoDetail() {
-        
+    private func showPhotoDetail(with id: String) {
+        let viewController = PhotoDetailViewController()
+        navigationController.pushViewController(viewController, animated: true)
     }
     
     private func showSearch() {
@@ -111,7 +112,9 @@ extension HomeCoordinator: HomeNavigationResponder {
 
 extension HomeCoordinator: PhotoFeedNavigationResponder {
     
-    func routeToDetail(with id: String) { }
+    func routeToDetail(with id: String) {
+        showPhotoDetail(with: id)
+    }
     
     func preparingFinished() {
         onFinishPrepare?()

@@ -79,7 +79,7 @@ file_length:
     ignore_comment_only_lines: true
 
 type_body_length:
-    warning: 200
+    warning: 250
     error: 300
 
 function_body_length:

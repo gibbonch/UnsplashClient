@@ -72,6 +72,14 @@ final class SearchViewModel: SearchViewModelProtocol {
         willSet { searchTask?.cancel() }
     }
     
+    private lazy var numberFormatter = {
+        let numberFormatter = NumberFormatter()
+        numberFormatter.numberStyle = .decimal
+        numberFormatter.groupingSeparator = ","
+        numberFormatter.usesGroupingSeparator = true
+        return numberFormatter
+    }()
+    
     // MARK: - Lifecycle
     
     init(searchRepository: SearchRepositoryProtocol, recentQueriesRepository: RecentQueriesRepositoryProtocol) {
@@ -187,7 +195,11 @@ final class SearchViewModel: SearchViewModelProtocol {
         if searchResult.total == 0 {
             searchButtonStateSubject.send(.empty)
         } else {
-            searchButtonStateSubject.send(.search("\(searchResult.total)"))
+            if let formattedNumber = numberFormatter.string(from: NSNumber(value: searchResult.total)) {
+                searchButtonStateSubject.send(.search(formattedNumber))
+            } else {
+                searchButtonStateSubject.send(.search("\(searchResult.total)"))
+            }
         }
     }
     
