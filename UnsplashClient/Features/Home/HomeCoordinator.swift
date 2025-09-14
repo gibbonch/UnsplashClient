@@ -52,7 +52,13 @@ final class HomeCoordinator: CoordinatorProtocol {
     }
     
     private func showPhotoDetail(with id: String) {
-        let viewController = PhotoDetailViewController()
+        let photoRepository = diContainer.resolve(PhotoRepositoryProtocol.self)!
+        let contextProvider = diContainer.resolve(ContextProvider.self)!
+        let favoritesRepository = FavoritesRepository(contextProvider: contextProvider)
+        let service = PhotoDetailService(photoRepository: photoRepository, favoritesRepository: favoritesRepository)
+        let viewModel = PhotoDetailViewModel(id: id, service: service)
+        viewModel.responder = self
+        let viewController = PhotoDetailViewController(viewModel: viewModel)
         navigationController.pushViewController(viewController, animated: true)
     }
     
@@ -127,5 +133,19 @@ extension HomeCoordinator: SearchNavigationResponder {
     
     func routeToSearchResults(with query: SearchQuery) {
         showSearchResults(for: query)
+    }
+}
+
+// MARK: - PhotoDetailNavigationResponder
+
+extension HomeCoordinator: PhotoDetailNavigationResponder {
+    
+    func dismissScene() {
+        navigationController.popViewController(animated: true)
+        
+        if let presenter = navigationController as? BannerPresenting {
+            let banner = Banner(title: "Something went wrong", type: .error)
+            presenter.showBanner(banner)
+        }
     }
 }

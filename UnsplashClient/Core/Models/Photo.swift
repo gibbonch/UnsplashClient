@@ -33,6 +33,6 @@ struct DetailedPhoto {
 }
 
 enum PhotoSource {
-    case remote
+    case remote(URL)
     case local(URL)
 }

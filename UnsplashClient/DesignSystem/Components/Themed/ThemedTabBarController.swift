@@ -1,6 +1,6 @@
 import UIKit
 
-final class ThemedTabBarController: UITabBarController, Themeable {
+final class ThemedTabBarController: UITabBarController, BannerPresenting, Themeable {
     
     override func viewDidLoad() {
         super.viewDidLoad()

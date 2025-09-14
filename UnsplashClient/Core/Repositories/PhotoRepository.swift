@@ -1,7 +1,11 @@
 import Foundation
 
 protocol PhotoRepositoryProtocol {
+    
+    @discardableResult
     func fetchPhotos(page: Int, perPage: Int, completion: @escaping (Result<[Photo], Error>) -> Void) -> CancellableTask?
+    
+    @discardableResult
     func fetchPhoto(id: String, completion: @escaping (Result<Photo, Error>) -> Void) -> CancellableTask?
 }
 

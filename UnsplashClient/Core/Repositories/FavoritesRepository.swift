@@ -56,7 +56,9 @@ final class FavoritesRepository: FavoritesRepositoryProtocol {
                let photo = dto.mapToDomain(source: .local(filePath)) {
                 completion(photo)
             } else {
-                if let photo = dto.mapToDomain(source: .remote) {
+                if let regular = dto.regular,
+                   let regularURL = URL(string: regular),
+                   let photo = dto.mapToDomain(source: .remote(regularURL)) {
                     completion(photo)
                 } else {
                     completion(nil)
@@ -89,7 +91,12 @@ final class FavoritesRepository: FavoritesRepositoryProtocol {
                     if let filePath = self.photoStore.imageFilePath(id: photoId) {
                         source = .local(filePath)
                     } else {
-                        source = .remote
+                        if let regular = dto.regular,
+                           let regularURL = URL(string: regular) {
+                            source = .remote(regularURL)
+                        } else {
+                            return nil
+                        }
                     }
                     
                     return dto.mapToDomain(source: source)

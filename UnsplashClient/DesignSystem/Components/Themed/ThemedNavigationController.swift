@@ -1,6 +1,6 @@
 import UIKit
 
-final class ThemedNavigationController: UINavigationController, Themeable {
+final class ThemedNavigationController: UINavigationController, BannerPresenting, Themeable {
     
     override func viewDidLoad() {
         super.viewDidLoad()
