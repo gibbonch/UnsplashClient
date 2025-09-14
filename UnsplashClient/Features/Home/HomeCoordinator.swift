@@ -59,6 +59,7 @@ final class HomeCoordinator: CoordinatorProtocol {
         let viewModel = PhotoDetailViewModel(id: id, service: service)
         viewModel.responder = self
         let viewController = PhotoDetailViewController(viewModel: viewModel)
+        viewController.hidesBottomBarWhenPushed = true
         navigationController.pushViewController(viewController, animated: true)
     }
     
