@@ -4,10 +4,11 @@ final class AppAssembly: AssemblyProtocol {
     
     func assemble(diContainer: DIContainerProtocol) {
         let networkClient = createNetworkClient()
+        let coreDataStack = CoreDataStack()
         diContainer.register(for: NetworkClientProtocol.self, networkClient)
-        diContainer.register(for: ContextProvider.self, CoreDataStack())
+        diContainer.register(for: ContextProvider.self, coreDataStack)
         diContainer.register(for: PhotoRepositoryProtocol.self, PhotoRepository(client: networkClient))
-        diContainer.register(for: SearchRepositoryProtocol.self, SearchRepository(client: networkClient))
+        diContainer.register(for: FavoritesRepositoryProtocol.self, FavoritesRepository(contextProvider: coreDataStack))
     }
     
     private func createNetworkClient() -> NetworkClientProtocol {
@@ -28,17 +29,19 @@ final class AppAssembly: AssemblyProtocol {
         decoder.dateDecodingStrategy = .iso8601
         decoder.keyDecodingStrategy = .convertFromSnakeCase
         
-        #if DEBUG
+#if DEBUG
+        // swiftlint:disable all
         let rateLimitMiddleware = RateLimitMiddleware {
             print("Rate limit: \($0.remain)/\($0.limit)")
         }
+        // swiftlint:enable all
         let chain = MiddlewareChain.with(
             requestMiddlewares: [AuthorizationMiddleware()],
             responseMiddlewares: [rateLimitMiddleware]
         )
-        #else
+#else
         let chain = MiddlewareChain.with(requestMiddlewares: [AuthorizationMiddleware()])
-        #endif
+#endif
         
         return NetworkClient(
             baseURL: UnsplashEnvironment.baseURL,

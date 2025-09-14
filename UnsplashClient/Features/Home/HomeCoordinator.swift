@@ -35,10 +35,7 @@ final class HomeCoordinator: CoordinatorProtocol {
         viewModel.bannerPresenter = homeViewController
         let photoFeedViewController = PhotoFeedViewController(viewModel: viewModel)
         
-        homeViewController.addChild(photoFeedViewController)
-        homeViewController.view.addSubview(photoFeedViewController.view)
-        photoFeedViewController.view.frame = homeViewController.view.frame
-        photoFeedViewController.didMove(toParent: homeViewController)
+        addChild(photoFeedViewController, on: homeViewController)
     }
     
     private func showSearchResults(for query: SearchQuery) {
@@ -47,18 +44,17 @@ final class HomeCoordinator: CoordinatorProtocol {
         viewModel.responder = self
         viewModel.bannerPresenter = homeViewController
         let photoFeedViewController = PhotoFeedViewController(viewModel: viewModel)
+        
         photoFeedViewController.navigationItem.title = query.text
         navigationController.pushViewController(photoFeedViewController, animated: true)
     }
     
     private func showPhotoDetail(with id: String) {
-        let photoRepository = diContainer.resolve(PhotoRepositoryProtocol.self)!
-        let contextProvider = diContainer.resolve(ContextProvider.self)!
-        let favoritesRepository = FavoritesRepository(contextProvider: contextProvider)
-        let service = PhotoDetailService(photoRepository: photoRepository, favoritesRepository: favoritesRepository)
+        let service = diContainer.resolve(PhotoDetailServiceProtocol.self)!
         let viewModel = PhotoDetailViewModel(id: id, service: service)
         viewModel.responder = self
         let viewController = PhotoDetailViewController(viewModel: viewModel)
+        
         viewController.hidesBottomBarWhenPushed = true
         navigationController.pushViewController(viewController, animated: true)
     }
@@ -67,8 +63,7 @@ final class HomeCoordinator: CoordinatorProtocol {
         guard !isSearching else { return }
         
         let searchRepository = diContainer.resolve(SearchRepositoryProtocol.self)!
-        let contextProvider = diContainer.resolve(ContextProvider.self)!
-        let recentQueriesRepository = RecentQueriesRepository(contextProvider: contextProvider)
+        let recentQueriesRepository = diContainer.resolve(RecentQueriesRepositoryProtocol.self)!
         
         let viewModel = SearchViewModel(
             searchRepository: searchRepository,
@@ -79,16 +74,10 @@ final class HomeCoordinator: CoordinatorProtocol {
         viewModel.responder = self
         
         let searchViewController = SearchViewController(viewModel: viewModel)
-        searchViewController.hideKeyboardResponder = homeViewController
-        
-        homeViewModel.searchDelegate = viewModel
-        
-        homeViewController.addChild(searchViewController)
-        homeViewController.view.addSubview(searchViewController.view)
-        searchViewController.view.frame = homeViewController.view.frame
-        searchViewController.didMove(toParent: homeViewController)
-        
         self.searchViewController = searchViewController
+        searchViewController.hideKeyboardResponder = homeViewController
+        homeViewModel.searchDelegate = viewModel
+        addChild(searchViewController, on: homeViewController)
         isSearching = true
     }
     
@@ -99,6 +88,13 @@ final class HomeCoordinator: CoordinatorProtocol {
         searchViewController?.view.removeFromSuperview()
         searchViewController = nil
         isSearching = false
+    }
+    
+    private func addChild(_ childVC: UIViewController, on parentVC: UIViewController) {
+        parentVC.addChild(childVC)
+        parentVC.view.addSubview(childVC.view)
+        childVC.view.frame = parentVC.view.frame
+        childVC.didMove(toParent: parentVC)
     }
 }
 

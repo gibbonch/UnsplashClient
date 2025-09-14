@@ -15,8 +15,7 @@ final class FavoritesCoordinator: CoordinatorProtocol {
     }
     
     func showFavorites() {
-        let provider = diContainer.resolve(ContextProvider.self)!
-        let repository = FavoritesRepository(contextProvider: provider)
+        let repository = diContainer.resolve(FavoritesRepositoryProtocol.self)!
         let viewModel = FavoritesViewModel(favoritesRepository: repository)
         viewModel.responder = self
         let favoritesViewController = FavoritesViewController(viewModel: viewModel)
@@ -24,10 +23,7 @@ final class FavoritesCoordinator: CoordinatorProtocol {
     }
     
     func showPhotoDetail(id: String) {
-        let photoRepository = diContainer.resolve(PhotoRepositoryProtocol.self)!
-        let contextProvider = diContainer.resolve(ContextProvider.self)!
-        let favoritesRepository = FavoritesRepository(contextProvider: contextProvider)
-        let service = PhotoDetailService(photoRepository: photoRepository, favoritesRepository: favoritesRepository)
+        let service = diContainer.resolve(PhotoDetailServiceProtocol.self)!
         let viewModel = PhotoDetailViewModel(id: id, service: service)
         viewModel.responder = self
         let viewController = PhotoDetailViewController(viewModel: viewModel)

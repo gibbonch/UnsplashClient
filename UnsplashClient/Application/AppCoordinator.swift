@@ -42,7 +42,7 @@ final class AppCoordinator: CoordinatorProtocol {
         let homeDIContainer = DIContainer()
         homeDIContainer.parent = diContainer
         
-        PhotoFeedAssembly().assemble(diContainer: homeDIContainer)
+        HomeAssembly().assemble(diContainer: homeDIContainer)
         
         let homeCoordinator = HomeCoordinator(
             navigationController: homeNavigationController,
@@ -64,6 +64,9 @@ final class AppCoordinator: CoordinatorProtocol {
         
         let favoritesDIContainer = DIContainer()
         favoritesDIContainer.parent = diContainer
+        
+        FavoritesAssembly().assemble(diContainer: favoritesDIContainer)
+        
         let favoritesCoordinator = FavoritesCoordinator(
             navigationController: favoritesNavigationController,
             diContainer: favoritesDIContainer
