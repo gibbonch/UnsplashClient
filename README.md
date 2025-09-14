@@ -6,7 +6,7 @@ iOS клиент для просмотра фотографий из Unsplash.
 
 | Главный экран | Поиск фотографий | Детальный просмотр | Избранные фотографии |
 |:-------------:|:----------------:|:-----------------:|:-------------------:|
-| ![Главный экран](screenshots/home.png) | ![Поиск фотографий](screenshots/search.png) | ![Детальный просмотр](screenshots/detail.png) | ![Избранные фотографии](screenshots/favorites.png) |
+| <img src="screenshots/home.png" alt="Главный экран" width="200"/>| <img src="screenshots/search.png" alt="Поиск фотографий" width="200"/> | <img src="screenshots/detail.png" alt="Детальный просмотр" width="200"/> | <img src="screenshots/favorites.png" alt="Избранные фотографии" width="200"/> |
 
 ## Особенности
 
